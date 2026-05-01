@@ -47,10 +47,6 @@
     #appShell {
       position: fixed;
       inset: 0;
-      width: 100vw;
-      width: 100dvw;
-      height: 100vh;
-      height: 100dvh;
       overflow: hidden;
       background:
         radial-gradient(circle at 12% 18%, rgba(87, 255, 231, 0.12), transparent 26%),
@@ -67,7 +63,7 @@
       background: #000;
     }
 
-    #videoSource, #sourceCanvas, #scratchCanvas {
+    #videoSource, #videoSourceB, #sourceCanvas, #scratchCanvas {
       position: absolute;
       width: 1px;
       height: 1px;
@@ -84,7 +80,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: clamp(12px, 4vmin, 24px);
+      padding: 24px;
       overflow: hidden;
       background:
         radial-gradient(circle at 12% 80%, rgba(87, 255, 231, 0.11), transparent 30%),
@@ -132,10 +128,8 @@
 
     .homeCard {
       position: relative;
-      width: min(980px, calc(100vw - 24px));
-      width: min(980px, calc(100dvw - 24px));
-      min-height: min(640px, calc(100vh - 28px));
-      min-height: min(640px, calc(100dvh - 28px));
+      width: min(980px, 94vw);
+      min-height: min(640px, 86vh);
       border: 1px solid rgba(87, 255, 231, 0.24);
       border-radius: 28px;
       background:
@@ -171,26 +165,18 @@
 
     .pixelTitle {
       display: flex;
-      gap: clamp(2px, 0.72vw, 10px);
+      gap: clamp(4px, 0.9vw, 10px);
       align-items: flex-start;
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
       filter: drop-shadow(0 0 14px rgba(87, 255, 231, 0.7));
-      max-width: 100%;
-    }
-
-    #homePixelTitle {
-      justify-content: center;
-      transform-origin: center top;
-      width: 100%;
     }
 
     .pixelLetter {
       display: grid;
       grid-template-columns: repeat(5, var(--pxSize));
       grid-template-rows: repeat(7, var(--pxSize));
-      gap: max(1px, calc(var(--pxSize) * 0.16));
-      --pxSize: clamp(4px, 1.22vw, 16px);
-      flex: 0 0 auto;
+      gap: max(1px, calc(var(--pxSize) * 0.18));
+      --pxSize: clamp(7px, 1.5vw, 17px);
     }
 
     .pixelLetter.small {
@@ -238,6 +224,32 @@
       margin-top: 12px;
     }
 
+    .launchWrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: clamp(24px, 6vh, 64px);
+      width: 100%;
+    }
+
+    .enterButton {
+      min-width: min(280px, 72vw);
+      padding: 16px 32px;
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      letter-spacing: 0.24em;
+    }
+
+    .launchHint {
+      color: rgba(234, 255, 251, 0.58);
+      font-size: clamp(0.72rem, 1.6vw, 0.92rem);
+      text-align: center;
+      line-height: 1.45;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
     .designer {
       position: absolute;
       right: clamp(18px, 4vw, 44px);
@@ -282,83 +294,10 @@
       font-size: 0.78rem;
     }
 
-    #masterHideButton {
-      position: fixed;
-      right: 12px;
-      top: calc(12px + var(--safe-top));
-      z-index: 90;
-      min-width: 76px;
-      min-height: 34px;
-      padding: 8px 11px;
-      border: 1px solid rgba(200, 200, 200, 0.34);
-      border-radius: 999px;
-      background: rgba(20, 24, 24, 0.68);
-      color: rgba(234, 255, 251, 0.82);
-      box-shadow: 0 0 14px rgba(87, 255, 231, 0.14);
-      cursor: pointer;
-      transition: all 160ms ease;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    #appShell.uiHidden #topBar,
-    #appShell.uiHidden #controlDock,
-    #appShell.uiHidden #cheatSheet,
-    #appShell.uiHidden #cornerHint,
-    #appShell.uiHidden #toast {
-      display: none !important;
-    }
-
-    #appShell.uiHidden #masterHideButton {
-      width: 12px;
-      height: 12px;
-      min-width: 12px;
-      min-height: 12px;
-      padding: 0;
-      border: 0;
-      border-radius: 50%;
-      background: rgba(128, 128, 128, 0.40);
-      color: transparent;
-      opacity: 1;
-      box-shadow: none;
-      overflow: hidden;
-    }
-
-    .nudgeGrid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      margin: 10px 0;
-    }
-
-    .nudgeGrid .spacer {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .cheatGroup {
-      border-top: 1px solid rgba(87, 255, 231, 0.14);
-      padding-top: 10px;
-      margin-top: 10px;
-    }
-
-    .cheatGroup:first-of-type {
-      border-top: 0;
-      padding-top: 0;
-      margin-top: 0;
-    }
-
-    .cheatGroup h4 {
-      margin: 0 0 8px;
-      color: #dffff9;
-      text-transform: uppercase;
-      letter-spacing: 0.13em;
-      font-size: 0.72rem;
-    }
-
     #topBar {
       position: fixed;
       left: 12px;
-      right: 102px;
+      right: 12px;
       top: calc(10px + var(--safe-top));
       z-index: 12;
       display: flex;
@@ -694,25 +633,13 @@
     }
 
     @media (max-width: 780px) {
-      .homeCard { min-height: min(84vh, calc(100dvh - 24px)); padding: clamp(14px, 5vw, 28px); }
+      .homeCard { min-height: 84vh; }
       .designer { right: 22px; bottom: 22px; }
-      .homeCopy { padding-bottom: 22px; font-size: clamp(0.82rem, 3.4vw, 1.02rem); }
+      .homeCopy { padding-bottom: 44px; }
       #controlDock { max-height: 64vh; }
       .panelTabs { grid-template-columns: repeat(2, 1fr); }
       .statusPill { display: none; }
       .brandBugText { display: none; }
-      #homePixelTitle { justify-content: center; }
-      #homePixelTitle { gap: 1px; }
-      #homePixelTitle .pixelLetter { --pxSize: clamp(4px, 1.4vw, 11px); gap: 1px; }
-      #masterHideButton { right: 10px; top: calc(10px + var(--safe-top)); }
-      #topBar { right: 44px; }
-    }
-
-    @media (max-width: 420px) {
-      #homePixelTitle { gap: 1px; }
-      #homePixelTitle .pixelLetter { --pxSize: clamp(3.2px, 1.55vw, 6.8px); gap: 1px; }
-      .homeCard { border-radius: 22px; }
-      .launchWrap { margin-top: 18px; }
     }
 
     @media (orientation: landscape) and (max-height: 520px) {
@@ -729,6 +656,7 @@
   <div id="appShell">
     <canvas id="visualCanvas" aria-label="MARZview audio reactive camera canvas"></canvas>
     <video id="videoSource" playsinline autoplay muted></video>
+    <video id="videoSourceB" playsinline autoplay muted></video>
     <canvas id="sourceCanvas"></canvas>
     <canvas id="scratchCanvas"></canvas>
 
@@ -744,7 +672,6 @@
     </div>
 
     <div id="cornerHint" class="cornerHint hidden">Bluetooth keyboard ready<br/>K = cheat sheet • E/V/X/C = panels</div>
-    <button id="masterHideButton" class="hidden" aria-pressed="false" title="Hide all on-screen controls">Hide UI</button>
 
     <section id="homeScreen" class="screen" aria-label="Home screen">
       <div class="homeCard">
@@ -754,10 +681,12 @@
             <p class="homeCopy">
               Camera becomes luminous signal. Microphone becomes motion. Stack two neon synth visuals, bend their texture, trail, glow, bitrate, and color drift, then record the live canvas with audio.
             </p>
-            <div class="homeActions">
-              <button id="startButton" class="primaryButton">Start Camera + Mic</button>
-              <button id="demoButton" class="ghostButton">Open Demo Visualizer</button>
-              <button id="loaderPreviewButton" class="ghostButton">Replay Loader</button>
+            <div class="launchWrap">
+              <button id="enterButton" class="primaryButton enterButton">Enter</button>
+              <div class="homeActions">
+                <button id="demoButton" class="ghostButton">Open Demo Visualizer</button>
+              </div>
+              <p class="launchHint">Home first. Loader appears only when you enter.</p>
             </div>
             <p class="tinyNote">For iPhone/iPad, start from a tap so Safari can unlock camera, mic, and audio analysis. MP4 export appears when the browser supports MediaRecorder MP4; otherwise the app records a WebM fallback.</p>
           </div>
@@ -766,7 +695,7 @@
       </div>
     </section>
 
-    <section id="loaderScreen" class="screen" aria-label="Loading screen">
+    <section id="loaderScreen" class="screen hidden" aria-label="Loading screen">
       <canvas id="loaderCanvas"></canvas>
       <div id="loaderText" class="loaderText">loading...</div>
     </section>
@@ -775,7 +704,6 @@
       <div class="dockHeader">
         <strong>Controls</strong>
         <div>
-          <button id="keyboardButton" class="miniButton" title="Show keyboard shortcuts">Keys</button>
           <button id="randomizeButton" class="miniButton" title="Randomize look">Dice</button>
           <button id="collapseButton" class="miniButton" title="Collapse controls">Hide</button>
         </div>
@@ -808,8 +736,8 @@
             <input id="intensity" type="range" min="0" max="1" step="0.01" data-setting="intensity" />
           </div>
           <div class="controlRow">
-            <div><label for="audioSensitivity">Mic sensitivity</label><small>0% to 500% microphone gain into the visual engine.</small></div><span class="valueReadout" id="audioSensitivityVal"></span>
-            <input id="audioSensitivity" type="range" min="0" max="5" step="0.01" data-setting="audioSensitivity" />
+            <div><label for="audioSensitivity">Audio response</label><small>How hard the microphone pushes the visuals.</small></div><span class="valueReadout" id="audioSensitivityVal"></span>
+            <input id="audioSensitivity" type="range" min="0" max="1.8" step="0.01" data-setting="audioSensitivity" />
           </div>
         </div>
 
@@ -875,105 +803,70 @@
             <button id="pauseButton" class="ghostButton">Pause</button>
             <button id="homeButton" class="ghostButton">Home</button>
           </div>
+          <div class="sectionTitle">Device cameras <span>N next • D dual</span></div>
+          <label for="primaryCameraSelect">Primary camera</label>
+          <select id="primaryCameraSelect" aria-label="Primary camera selector"></select>
+          <label for="secondaryCameraSelect">Second camera</label>
+          <select id="secondaryCameraSelect" aria-label="Secondary camera selector"></select>
+          <div class="buttonGrid three">
+            <button id="refreshCamerasButton" class="ghostButton">Refresh</button>
+            <button id="nextCameraButton" class="ghostButton">Next Camera</button>
+            <button id="dualCameraButton" class="ghostButton">Dual: Off</button>
+          </div>
           <div class="controlRow">
-            <div><label for="cameraAlpha">Camera ghost</label><small>Faint original video under the visuals.</small></div><span class="valueReadout" id="cameraAlphaVal"></span>
-            <input id="cameraAlpha" type="range" min="0" max="0.6" step="0.01" data-setting="cameraAlpha" />
+            <div><label for="dualCameraMix">Dual camera mix</label><small>Blends the second live camera into the source before the effects process it.</small></div><span class="valueReadout" id="dualCameraMixVal"></span>
+            <input id="dualCameraMix" type="range" min="0" max="1" step="0.01" data-setting="dualCameraMix" />
+          </div>
+          <div class="buttonGrid three">
+            <button id="zoomInButton" class="ghostButton">Z+</button>
+            <button id="zoomOutButton" class="ghostButton">Z−</button>
+            <button id="centerViewButton" class="ghostButton">Center</button>
           </div>
           <div class="controlRow">
             <div><label for="cameraZoom">Camera zoom</label><small>True source zoom before the effects process the image.</small></div><span class="valueReadout" id="cameraZoomVal"></span>
             <input id="cameraZoom" type="range" min="1" max="4" step="0.01" data-setting="cameraZoom" />
           </div>
           <div class="controlRow">
-            <div><label for="panX">Pan left / right</label><small>Move the zoomed camera frame horizontally.</small></div><span class="valueReadout" id="panXVal"></span>
-            <input id="panX" type="range" min="-1" max="1" step="0.01" data-setting="panX" />
+            <div><label for="cameraPanX">Pan left / right</label><small>Left and right arrow orientation corrected for the mirrored camera view.</small></div><span class="valueReadout" id="cameraPanXVal"></span>
+            <input id="cameraPanX" type="range" min="-1" max="1" step="0.01" data-setting="cameraPanX" />
           </div>
           <div class="controlRow">
-            <div><label for="panY">Pan up / down</label><small>Move the zoomed camera frame vertically.</small></div><span class="valueReadout" id="panYVal"></span>
-            <input id="panY" type="range" min="-1" max="1" step="0.01" data-setting="panY" />
+            <div><label for="cameraPanY">Pan up / down</label><small>Moves the zoomed source view vertically.</small></div><span class="valueReadout" id="cameraPanYVal"></span>
+            <input id="cameraPanY" type="range" min="-1" max="1" step="0.01" data-setting="cameraPanY" />
           </div>
-          <div class="sectionTitle">Frame nudges <span>Z + / Z - • arrows pan</span></div>
-          <div class="nudgeGrid">
-            <span class="spacer"></span>
-            <button class="miniButton" data-pan="up">Pan ↑</button>
-            <span class="spacer"></span>
-            <button class="miniButton" data-pan="left">Pan ←</button>
-            <button class="miniButton" data-zoom="out">Z−</button>
-            <button class="miniButton" data-pan="right">Pan →</button>
-            <span class="spacer"></span>
-            <button class="miniButton" data-pan="down">Pan ↓</button>
-            <button class="miniButton" data-zoom="in">Z+</button>
+          <div class="controlRow">
+            <div><label for="cameraAlpha">Camera ghost</label><small>Faint original video under the visuals.</small></div><span class="valueReadout" id="cameraAlphaVal"></span>
+            <input id="cameraAlpha" type="range" min="0" max="0.6" step="0.01" data-setting="cameraAlpha" />
           </div>
           <div class="meterWrap">
             <div><small>Volume</small><div class="meter"><span id="volumeMeter"></span></div></div>
             <div><small>Bass</small><div class="meter"><span id="bassMeter"></span></div></div>
             <div><small>Motion</small><div class="meter"><span id="motionMeter"></span></div></div>
           </div>
-          <p class="tinyNote">Use the main Start button for real camera/microphone input. Demo mode creates synthetic motion so the visuals still run without permissions.</p>
+          <p class="tinyNote">Use the main Enter button for real camera/microphone input. Camera names appear after permission is granted. Dual camera depends on whether the browser and device allow two simultaneous live camera streams.</p>
         </div>
       </div>
     </div>
 
     <aside id="cheatSheet" class="hidden" aria-label="Keyboard cheat sheet">
       <h3>Keyboard cheat sheet</h3>
-
-      <div class="cheatGroup">
-        <h4>Panels + visibility</h4>
-        <div class="keyGrid">
-          <div><kbd>K</kbd></div><div>Show / hide this cheat sheet.</div>
-          <div><kbd>E</kbd> <kbd>V</kbd> <kbd>X</kbd> <kbd>C</kbd></div><div>Open Effects, Visual, Export, or Camera panel.</div>
-          <div><kbd>P</kbd></div><div>Show / hide the control dock.</div>
-          <div><kbd>U</kbd></div><div>Master hide all on-screen controls. Click the gray dot to bring them back.</div>
-        </div>
-      </div>
-
-      <div class="cheatGroup">
-        <h4>Effects panel</h4>
-        <div class="keyGrid">
-          <div><kbd>1</kbd>–<kbd>0</kbd></div><div>Change the primary effect bank.</div>
-          <div><kbd>Shift</kbd> + <kbd>1</kbd>–<kbd>0</kbd></div><div>Change the secondary effect bank.</div>
-          <div><kbd>[</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Hold [ and use arrows for Primary mix.</div>
-          <div><kbd>]</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Hold ] and use arrows for Secondary mix.</div>
-          <div><kbd>I</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Hold I for Intensity.</div>
-          <div><kbd>M</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Hold M for Mic sensitivity, from 0% to 500%.</div>
-        </div>
-      </div>
-
-      <div class="cheatGroup">
-        <h4>Visual panel</h4>
-        <div class="keyGrid">
-          <div><kbd>G</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Glow.</div>
-          <div><kbd>T</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Texture.</div>
-          <div><kbd>Q</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Visual bitrate / pixel depth.</div>
-          <div><kbd>A</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Trail.</div>
-          <div><kbd>D</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Edge boost.</div>
-          <div><kbd>H</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Color drift.</div>
-          <div><kbd>F</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Feedback.</div>
-        </div>
-      </div>
-
-      <div class="cheatGroup">
-        <h4>Camera frame</h4>
-        <div class="keyGrid">
-          <div><kbd>Z</kbd> + <kbd>+</kbd>/<kbd>-</kbd></div><div>Zoom camera source in or out.</div>
-          <div><kbd>Z</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Hold Z and use left/right for camera zoom.</div>
-          <div><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd></div><div>Pan the zoomed camera view when no slider hotkey is held.</div>
-          <div><kbd>J</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Camera ghost opacity.</div>
-        </div>
-      </div>
-
-      <div class="cheatGroup">
-        <h4>Export + app actions</h4>
-        <div class="keyGrid">
-          <div><kbd>R</kbd></div><div>Start / stop recording.</div>
-          <div><kbd>S</kbd></div><div>Save a PNG snapshot.</div>
-          <div><kbd>B</kbd></div><div>Randomize visual stack.</div>
-          <div><kbd>Space</kbd></div><div>Pause / resume visual engine.</div>
-          <div><kbd>N</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Export bitrate.</div>
-          <div><kbd>L</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>FPS.</div>
-          <div><kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>C</kbd></div><div>Copy current preset JSON.</div>
-          <div><kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>V</kbd></div><div>Paste preset JSON from clipboard.</div>
-          <div><kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Z</kbd></div><div>Undo. Use Shift+⌘/Ctrl+Z or Ctrl+Y to redo.</div>
-        </div>
+      <div class="keyGrid">
+        <div><kbd>K</kbd></div><div>Show / hide this cheat sheet.</div>
+        <div><kbd>E</kbd> <kbd>V</kbd> <kbd>X</kbd> <kbd>C</kbd></div><div>Open Effects, Visual, Export, or Camera panel.</div>
+        <div><kbd>N</kbd></div><div>Switch to the next available camera.</div>
+        <div><kbd>D</kbd></div><div>Turn dual-camera blending on or off.</div>
+        <div><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd></div><div>Adjust the focused or most recently touched slider. Hold Shift for larger jumps.</div>
+        <div><kbd>1</kbd>–<kbd>0</kbd></div><div>Change primary effect.</div>
+        <div><kbd>Shift</kbd> + <kbd>1</kbd>–<kbd>0</kbd></div><div>Change secondary effect.</div>
+        <div><kbd>R</kbd></div><div>Start / stop recording.</div>
+        <div><kbd>S</kbd></div><div>Save a PNG snapshot.</div>
+        <div><kbd>B</kbd></div><div>Randomize settings.</div>
+        <div><kbd>P</kbd></div><div>Show / hide the control dock.</div>
+        <div><kbd>Space</kbd></div><div>Pause / resume visual engine.</div>
+        <div><kbd>Ctrl</kbd> + <kbd>C</kbd></div><div>Copy the current preset JSON.</div>
+        <div><kbd>Ctrl</kbd> + <kbd>V</kbd></div><div>Paste a preset JSON from clipboard, if available.</div>
+        <div><kbd>Ctrl</kbd> + <kbd>Z</kbd></div><div>Undo setting change.</div>
+        <div><kbd>Ctrl</kbd> + <kbd>Y</kbd></div><div>Redo setting change.</div>
       </div>
     </aside>
 
@@ -1036,10 +929,11 @@
         colorDrift: 0.45,
         feedback: 0.24,
         zoom: 0.2,
-        cameraAlpha: 0.06,
         cameraZoom: 1,
-        panX: 0,
-        panY: 0,
+        cameraPanX: 0,
+        cameraPanY: 0,
+        dualCameraMix: 0.42,
+        cameraAlpha: 0.06,
         exportBitrate: 8,
         fps: 30
       });
@@ -1053,6 +947,11 @@
       let isPaused = false;
       let demoMode = false;
       let mediaStream = null;
+      let secondaryStream = null;
+      let cameraDevices = [];
+      let activePrimaryDeviceId = "";
+      let activeSecondaryDeviceId = "";
+      let dualCameraEnabled = false;
       let audioContext = null;
       let analyser = null;
       let freqData = null;
@@ -1065,52 +964,11 @@
       let mediaRecorder = null;
       let recordedChunks = [];
       let recorderMime = "";
-      let uiHidden = false;
-      let activeShortcutSetting = null;
-      let activeShortcutKey = null;
-
-      const sliderShortcuts = {
-        "[": "primaryMix",
-        "]": "secondaryMix",
-        i: "intensity",
-        m: "audioSensitivity",
-        g: "glow",
-        t: "texture",
-        q: "bitrate",
-        a: "trail",
-        d: "edgeBoost",
-        h: "colorDrift",
-        f: "feedback",
-        z: "cameraZoom",
-        j: "cameraAlpha",
-        n: "exportBitrate",
-        l: "fps"
-      };
-
-      const settingLabels = {
-        primaryMix: "Primary mix",
-        secondaryMix: "Secondary mix",
-        intensity: "Intensity",
-        audioSensitivity: "Mic sensitivity",
-        glow: "Glow",
-        texture: "Texture",
-        bitrate: "Visual bitrate",
-        trail: "Trail",
-        edgeBoost: "Edge boost",
-        colorDrift: "Color drift",
-        feedback: "Feedback",
-        zoom: "Zoom warp",
-        cameraAlpha: "Camera ghost",
-        cameraZoom: "Camera zoom",
-        panX: "Pan left/right",
-        panY: "Pan up/down",
-        exportBitrate: "Export bitrate",
-        fps: "FPS"
-      };
 
       const canvas = document.getElementById("visualCanvas");
       const ctx = canvas.getContext("2d", { alpha: false });
       const video = document.getElementById("videoSource");
+      const secondaryVideo = document.getElementById("videoSourceB");
       const sourceCanvas = document.getElementById("sourceCanvas");
       const sourceCtx = sourceCanvas.getContext("2d", { willReadFrequently: true });
       const scratchCanvas = document.getElementById("scratchCanvas");
@@ -1125,7 +983,6 @@
       const statusPill = document.getElementById("statusPill");
       const topBar = document.getElementById("topBar");
       const cornerHint = document.getElementById("cornerHint");
-      const masterHideButton = document.getElementById("masterHideButton");
       const volumeMeter = document.getElementById("volumeMeter");
       const bassMeter = document.getElementById("bassMeter");
       const motionMeter = document.getElementById("motionMeter");
@@ -1166,18 +1023,12 @@
       function populateEffects() {
         const primary = document.getElementById("primarySelect");
         const secondary = document.getElementById("secondarySelect");
-        primary.add(new Option("None", "none"));
-        secondary.add(new Option("None", "none"));
         EFFECTS.forEach(effect => {
           const opt1 = new Option(effect.name, effect.id);
           const opt2 = new Option(effect.name, effect.id);
           primary.add(opt1);
           secondary.add(opt2);
         });
-      }
-
-      function isEffectId(id) {
-        return id === "none" || EFFECTS.some(effect => effect.id === id);
       }
 
       function showToast(message) {
@@ -1227,8 +1078,7 @@
         if (key === "fps") return `${Math.round(value)}`;
         if (key === "exportBitrate") return `${value.toFixed(1)}M`;
         if (key === "cameraZoom") return `${value.toFixed(2)}x`;
-        if (key === "panX" || key === "panY") return `${Math.round(value * 100)}`;
-        if (key === "audioSensitivity") return `${Math.round(value * 100)}%`;
+        if (key === "cameraPanX" || key === "cameraPanY") return `${value >= 0 ? "+" : ""}${value.toFixed(2)}`;
         return `${Math.round(value * 100)}%`;
       }
 
@@ -1252,12 +1102,8 @@
             cleaned[key] = numeric ? Number(next[key]) : next[key];
           }
         });
-        if (!isEffectId(cleaned.primaryEffect)) cleaned.primaryEffect = defaultSettings.primaryEffect;
-        if (!isEffectId(cleaned.secondaryEffect)) cleaned.secondaryEffect = defaultSettings.secondaryEffect;
-        cleaned.cameraZoom = clamp(Number(cleaned.cameraZoom || 1), 1, 4);
-        cleaned.panX = clamp(Number(cleaned.panX || 0), -1, 1);
-        cleaned.panY = clamp(Number(cleaned.panY || 0), -1, 1);
-        cleaned.audioSensitivity = clamp(Number(cleaned.audioSensitivity || 0), 0, 5);
+        if (!EFFECTS.some(e => e.id === cleaned.primaryEffect)) cleaned.primaryEffect = defaultSettings.primaryEffect;
+        if (!EFFECTS.some(e => e.id === cleaned.secondaryEffect)) cleaned.secondaryEffect = defaultSettings.secondaryEffect;
         if (pushHistory && !isApplyingHistory) undoStack.push({ ...settings });
         settings = cleaned;
         updateControlsFromSettings();
@@ -1295,7 +1141,7 @@
           primaryMix: rand(0.72, 1),
           secondaryMix: rand(0.28, 0.86),
           intensity: rand(0.48, 1),
-          audioSensitivity: rand(0.35, 3.2),
+          audioSensitivity: rand(0.55, 1.45),
           glow: rand(0.42, 1),
           texture: rand(0.22, 1),
           bitrate: rand(0.20, 0.94),
@@ -1304,10 +1150,10 @@
           colorDrift: rand(0.12, 0.88),
           feedback: rand(0.05, 0.65),
           zoom: rand(0, 0.58),
-          cameraAlpha: rand(0, 0.18),
-          cameraZoom: rand(1, 1.75),
-          panX: rand(-0.16, 0.16),
-          panY: rand(-0.16, 0.16)
+          cameraZoom: rand(1, 1.55),
+          cameraPanX: 0,
+          cameraPanY: 0,
+          cameraAlpha: rand(0, 0.18)
         };
         updateControlsFromSettings();
         showToast("New visual stack generated.");
@@ -1361,15 +1207,7 @@
         });
 
         document.getElementById("collapseButton").addEventListener("click", toggleControls);
-        document.getElementById("keyboardButton").addEventListener("click", toggleCheatSheet);
         document.getElementById("randomizeButton").addEventListener("click", randomizeSettings);
-        masterHideButton.addEventListener("click", toggleMasterUI);
-        document.querySelectorAll("[data-pan]").forEach(button => {
-          button.addEventListener("click", () => panByDirection(button.dataset.pan, 1));
-        });
-        document.querySelectorAll("[data-zoom]").forEach(button => {
-          button.addEventListener("click", () => nudgeZoom(button.dataset.zoom === "in" ? 1 : -1, 1));
-        });
         document.getElementById("recordButton").addEventListener("click", toggleRecording);
         document.getElementById("snapshotButton").addEventListener("click", saveSnapshot);
         document.getElementById("copyPresetButton").addEventListener("click", copyPreset);
@@ -1379,10 +1217,29 @@
         });
         document.getElementById("restartMediaButton").addEventListener("click", () => startRealMedia(true));
         document.getElementById("pauseButton").addEventListener("click", togglePause);
+        const refreshCamerasButton = document.getElementById("refreshCamerasButton");
+        const nextCameraButton = document.getElementById("nextCameraButton");
+        const dualCameraButton = document.getElementById("dualCameraButton");
+        const primaryCameraSelect = document.getElementById("primaryCameraSelect");
+        const secondaryCameraSelect = document.getElementById("secondaryCameraSelect");
+        if (refreshCamerasButton) refreshCamerasButton.addEventListener("click", () => refreshCameraList(true));
+        if (nextCameraButton) nextCameraButton.addEventListener("click", switchToNextCamera);
+        if (dualCameraButton) dualCameraButton.addEventListener("click", toggleDualCamera);
+        if (primaryCameraSelect) primaryCameraSelect.addEventListener("change", () => switchPrimaryCamera(primaryCameraSelect.value));
+        if (secondaryCameraSelect) secondaryCameraSelect.addEventListener("change", () => {
+          activeSecondaryDeviceId = secondaryCameraSelect.value;
+          if (dualCameraEnabled) startSecondaryCamera(activeSecondaryDeviceId);
+        });
+        const zoomInButton = document.getElementById("zoomInButton");
+        const zoomOutButton = document.getElementById("zoomOutButton");
+        const centerViewButton = document.getElementById("centerViewButton");
+        if (zoomInButton) zoomInButton.addEventListener("click", () => zoomCameraView(1));
+        if (zoomOutButton) zoomOutButton.addEventListener("click", () => zoomCameraView(-1));
+        if (centerViewButton) centerViewButton.addEventListener("click", resetCameraView);
         document.getElementById("homeButton").addEventListener("click", showHome);
-        document.getElementById("startButton").addEventListener("click", () => startRealMedia(false));
-        document.getElementById("demoButton").addEventListener("click", startDemo);
-        document.getElementById("loaderPreviewButton").addEventListener("click", () => playLoader(() => {}));
+        const enterButton = document.getElementById("enterButton");
+        if (enterButton) enterButton.addEventListener("click", () => playLoader(() => startRealMedia(false)));
+        document.getElementById("demoButton").addEventListener("click", () => playLoader(() => startDemo()));
       }
 
       function showPanel(panelId) {
@@ -1402,29 +1259,12 @@
         showToast(isPaused ? "Visual engine paused." : "Visual engine running.");
       }
 
-      function toggleCheatSheet(force) {
-        const shouldShow = typeof force === "boolean" ? force : cheatSheet.classList.contains("hidden");
-        cheatSheet.classList.toggle("hidden", !shouldShow);
-      }
-
-      function toggleMasterUI() {
-        uiHidden = !uiHidden;
-        document.getElementById("appShell").classList.toggle("uiHidden", uiHidden);
-        masterHideButton.textContent = uiHidden ? "" : "Hide UI";
-        masterHideButton.classList.remove("hidden");
-        masterHideButton.setAttribute("aria-pressed", String(uiHidden));
-        masterHideButton.title = uiHidden ? "Show on-screen controls" : "Hide all on-screen controls";
-      }
-
       function showHome() {
         homeScreen.classList.remove("hidden");
         controlDock.classList.add("hidden");
         topBar.classList.add("hidden");
         cornerHint.classList.add("hidden");
         cheatSheet.classList.add("hidden");
-        masterHideButton.classList.add("hidden");
-        uiHidden = false;
-        document.getElementById("appShell").classList.remove("uiHidden");
       }
 
       function showVisualizer() {
@@ -1433,21 +1273,162 @@
         controlDock.classList.remove("collapsed");
         topBar.classList.remove("hidden");
         cornerHint.classList.remove("hidden");
-        masterHideButton.classList.remove("hidden");
       }
 
-      async function startRealMedia(restart = false) {
+
+      async function refreshCameraList(showMessage = false) {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+          if (showMessage) showToast("This browser does not expose a camera list.");
+          return [];
+        }
+        try {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          cameraDevices = devices.filter(device => device.kind === "videoinput");
+          renderCameraSelectors();
+          if (showMessage) showToast(`${cameraDevices.length || 0} camera${cameraDevices.length === 1 ? "" : "s"} found.`);
+          return cameraDevices;
+        } catch (err) {
+          console.error(err);
+          if (showMessage) showToast("Could not refresh camera list.");
+          return [];
+        }
+      }
+
+      function cameraLabel(device, index) {
+        return device.label || `Camera ${index + 1}`;
+      }
+
+      function renderCameraSelectors() {
+        const primary = document.getElementById("primaryCameraSelect");
+        const secondary = document.getElementById("secondaryCameraSelect");
+        if (!primary || !secondary) return;
+        const previousPrimary = activePrimaryDeviceId || primary.value;
+        const previousSecondary = activeSecondaryDeviceId || secondary.value;
+        primary.innerHTML = "";
+        secondary.innerHTML = "";
+        if (!cameraDevices.length) {
+          primary.add(new Option("Camera list appears after permission", ""));
+          secondary.add(new Option("No second camera yet", ""));
+          return;
+        }
+        cameraDevices.forEach((device, index) => {
+          primary.add(new Option(cameraLabel(device, index), device.deviceId));
+          secondary.add(new Option(cameraLabel(device, index), device.deviceId));
+        });
+        if (cameraDevices.some(device => device.deviceId === previousPrimary)) {
+          primary.value = previousPrimary;
+        } else if (activePrimaryDeviceId && cameraDevices.some(device => device.deviceId === activePrimaryDeviceId)) {
+          primary.value = activePrimaryDeviceId;
+        }
+        if (!activePrimaryDeviceId) activePrimaryDeviceId = primary.value;
+        if (cameraDevices.some(device => device.deviceId === previousSecondary)) {
+          secondary.value = previousSecondary;
+        } else {
+          const alternate = cameraDevices.find(device => device.deviceId !== activePrimaryDeviceId) || cameraDevices[0];
+          secondary.value = alternate ? alternate.deviceId : "";
+        }
+        activeSecondaryDeviceId = secondary.value;
+      }
+
+      function videoConstraintsFor(deviceId = "") {
+        const base = {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          frameRate: { ideal: 30, max: 60 }
+        };
+        if (deviceId) return { ...base, deviceId: { exact: deviceId } };
+        return { ...base, facingMode: { ideal: "environment" } };
+      }
+
+      function updateDualCameraButton() {
+        const btn = document.getElementById("dualCameraButton");
+        if (btn) btn.textContent = dualCameraEnabled ? "Dual: On" : "Dual: Off";
+      }
+
+      async function switchPrimaryCamera(deviceId = "") {
+        if (!deviceId && cameraDevices.length) deviceId = cameraDevices[0].deviceId;
+        if (!deviceId) {
+          showToast("No selectable camera found yet. Start camera permission first, then refresh.");
+          return;
+        }
+        await startRealMedia(true, deviceId);
+      }
+
+      async function switchToNextCamera() {
+        if (!cameraDevices.length) await refreshCameraList(false);
+        if (!cameraDevices.length) {
+          showToast("No camera list available yet.");
+          return;
+        }
+        const currentIndex = Math.max(0, cameraDevices.findIndex(device => device.deviceId === activePrimaryDeviceId));
+        const next = cameraDevices[(currentIndex + 1) % cameraDevices.length];
+        await switchPrimaryCamera(next.deviceId);
+      }
+
+      async function startSecondaryCamera(deviceId = "") {
+        stopSecondaryCamera();
+        if (!cameraDevices.length) await refreshCameraList(false);
+        const fallback = cameraDevices.find(device => device.deviceId !== activePrimaryDeviceId) || cameraDevices[0];
+        let selectedDeviceId = deviceId || (fallback && fallback.deviceId) || "";
+        if (selectedDeviceId === activePrimaryDeviceId && fallback && fallback.deviceId !== activePrimaryDeviceId) {
+          selectedDeviceId = fallback.deviceId;
+        }
+        if (!selectedDeviceId || selectedDeviceId === activePrimaryDeviceId) {
+          dualCameraEnabled = false;
+          updateDualCameraButton();
+          showToast("No separate second camera is available from this browser yet.");
+          return false;
+        }
+        activeSecondaryDeviceId = selectedDeviceId;
+        try {
+          secondaryStream = await navigator.mediaDevices.getUserMedia({
+            video: videoConstraintsFor(selectedDeviceId),
+            audio: false
+          });
+          secondaryVideo.srcObject = secondaryStream;
+          await secondaryVideo.play();
+          dualCameraEnabled = true;
+          const secondarySelect = document.getElementById("secondaryCameraSelect");
+          if (secondarySelect) secondarySelect.value = selectedDeviceId;
+          updateDualCameraButton();
+          showToast("Dual camera blend is live.");
+          return true;
+        } catch (err) {
+          console.error(err);
+          dualCameraEnabled = false;
+          updateDualCameraButton();
+          showToast("This device/browser blocked a second live camera. Primary camera stays active.");
+          return false;
+        }
+      }
+
+      function stopSecondaryCamera() {
+        if (secondaryStream) {
+          secondaryStream.getTracks().forEach(track => track.stop());
+          secondaryStream = null;
+        }
+        if (secondaryVideo) secondaryVideo.srcObject = null;
+      }
+
+      async function toggleDualCamera() {
+        if (dualCameraEnabled) {
+          dualCameraEnabled = false;
+          stopSecondaryCamera();
+          updateDualCameraButton();
+          showToast("Dual camera blend off.");
+          return;
+        }
+        const secondarySelect = document.getElementById("secondaryCameraSelect");
+        await startSecondaryCamera(secondarySelect ? secondarySelect.value : activeSecondaryDeviceId);
+      }
+
+      async function startRealMedia(restart = false, preferredDeviceId = "") {
         demoMode = false;
         if (restart) stopMedia();
         try {
           setStatus("Requesting camera and microphone…");
           mediaStream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: { ideal: "environment" },
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
-              frameRate: { ideal: 30, max: 60 }
-            },
+            video: videoConstraintsFor(preferredDeviceId),
             audio: {
               echoCancellation: false,
               noiseSuppression: false,
@@ -1456,7 +1437,11 @@
           });
           video.srcObject = mediaStream;
           await video.play();
+          const track = mediaStream.getVideoTracks()[0];
+          activePrimaryDeviceId = (track && track.getSettings && track.getSettings().deviceId) || preferredDeviceId || activePrimaryDeviceId;
+          await refreshCameraList(false);
           await setupAudio(mediaStream);
+          if (dualCameraEnabled) await startSecondaryCamera(activeSecondaryDeviceId);
           showVisualizer();
           startEngine();
           setStatus("Live camera + microphone running. Press <kbd>R</kbd> to record, <kbd>K</kbd> for keys.");
@@ -1469,6 +1454,7 @@
       }
 
       function stopMedia() {
+        stopSecondaryCamera();
         if (mediaStream) {
           mediaStream.getTracks().forEach(track => track.stop());
           mediaStream = null;
@@ -1481,6 +1467,7 @@
         freqData = null;
         timeData = null;
         video.srcObject = null;
+        if (secondaryVideo) secondaryVideo.srcObject = null;
       }
 
       async function setupAudio(stream) {
@@ -1547,6 +1534,38 @@
         motionMeter.style.width = `${Math.round(audioState.motion * 100)}%`;
       }
 
+
+      function drawCameraFeedToSource(videoEl, sw, sh, alpha = 1, blendMode = "source-over") {
+        if (!videoEl || videoEl.readyState < 2 || !videoEl.videoWidth) return false;
+        const vw = videoEl.videoWidth;
+        const vh = videoEl.videoHeight;
+        const videoRatio = vw / vh;
+        const canvasRatio = sw / sh;
+        let baseX = 0, baseY = 0, baseW = vw, baseH = vh;
+        if (videoRatio > canvasRatio) {
+          baseW = vh * canvasRatio;
+          baseX = (vw - baseW) / 2;
+        } else {
+          baseH = vw / canvasRatio;
+          baseY = (vh - baseH) / 2;
+        }
+        const cameraZoom = clamp(Number(settings.cameraZoom || 1), 1, 4);
+        const sWidth = baseW / cameraZoom;
+        const sHeight = baseH / cameraZoom;
+        const panRangeX = Math.max(0, (baseW - sWidth) / 2);
+        const panRangeY = Math.max(0, (baseH - sHeight) / 2);
+        const sx = clamp(baseX + (baseW - sWidth) / 2 - Number(settings.cameraPanX || 0) * panRangeX, baseX, baseX + baseW - sWidth);
+        const sy = clamp(baseY + (baseH - sHeight) / 2 + Number(settings.cameraPanY || 0) * panRangeY, baseY, baseY + baseH - sHeight);
+        sourceCtx.save();
+        sourceCtx.globalAlpha = alpha;
+        sourceCtx.globalCompositeOperation = blendMode;
+        sourceCtx.translate(sw, 0);
+        sourceCtx.scale(-1, 1);
+        sourceCtx.drawImage(videoEl, sx, sy, sWidth, sHeight, 0, 0, sw, sh);
+        sourceCtx.restore();
+        return true;
+      }
+
       function prepareSourceFrame(now) {
         const w = canvas.width;
         const h = canvas.height;
@@ -1564,34 +1583,10 @@
         sourceCtx.save();
         sourceCtx.clearRect(0, 0, sw, sh);
         if (!demoMode && video.readyState >= 2 && video.videoWidth) {
-          const vw = video.videoWidth;
-          const vh = video.videoHeight;
-          const videoRatio = vw / vh;
-          const canvasRatio = sw / sh;
-          let sx = 0, sy = 0, sWidth = vw, sHeight = vh;
-          if (videoRatio > canvasRatio) {
-            sWidth = vh * canvasRatio;
-            sx = (vw - sWidth) / 2;
-          } else {
-            sHeight = vw / canvasRatio;
-            sy = (vh - sHeight) / 2;
+          drawCameraFeedToSource(video, sw, sh, 1, "source-over");
+          if (dualCameraEnabled && secondaryVideo && secondaryVideo.readyState >= 2) {
+            drawCameraFeedToSource(secondaryVideo, sw, sh, clamp(Number(settings.dualCameraMix || 0.42), 0, 1), "screen");
           }
-
-          const baseSX = sx;
-          const baseSY = sy;
-          const baseW = sWidth;
-          const baseH = sHeight;
-          const cameraZoom = clamp(Number(settings.cameraZoom || 1), 1, 4);
-          sWidth = baseW / cameraZoom;
-          sHeight = baseH / cameraZoom;
-          sx = baseSX + (baseW - sWidth) * ((clamp(Number(settings.panX || 0), -1, 1) + 1) / 2);
-          sy = baseSY + (baseH - sHeight) * ((clamp(Number(settings.panY || 0), -1, 1) + 1) / 2);
-          sx = clamp(sx, 0, vw - sWidth);
-          sy = clamp(sy, 0, vh - sHeight);
-
-          sourceCtx.translate(sw, 0);
-          sourceCtx.scale(-1, 1);
-          sourceCtx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, sw, sh);
         } else {
           drawDemoSource(sourceCtx, sw, sh, now);
         }
@@ -1688,7 +1683,7 @@
       }
 
       function drawEffect(id, frame, mix) {
-        if (id === "none" || mix <= 0.01) return;
+        if (mix <= 0.01) return;
         const fn = effectFunctions[id] || effectFunctions.tealBits;
         ctx.save();
         fn(frame, clamp(mix));
@@ -2114,16 +2109,8 @@
         showToast(`${secondary ? "Secondary" : "Primary"}: ${effect.name}`);
       }
 
-      function focusSetting(setting, announce = false) {
-        const range = document.querySelector(`input[type="range"][data-setting="${setting}"]`);
-        if (!range) return null;
-        lastRange = range;
-        range.focus({ preventScroll: true });
-        if (announce) showToast(`${settingLabels[setting] || setting}: use ← / → to adjust.`);
-        return range;
-      }
-
-      function adjustRange(range, delta) {
+      function adjustLastRange(delta) {
+        const range = lastRange || document.querySelector(".panelPage.active input[type='range']");
         if (!range) return;
         const step = Number(range.step || 0.01);
         const min = Number(range.min || 0);
@@ -2134,31 +2121,25 @@
         applySetting(range.dataset.setting, next);
       }
 
-      function adjustSetting(setting, delta) {
-        const range = focusSetting(setting, false);
-        adjustRange(range, delta);
+
+      function panCameraView(dx, dy) {
+        const nextX = clamp(Number(settings.cameraPanX || 0) + dx, -1, 1);
+        const nextY = clamp(Number(settings.cameraPanY || 0) + dy, -1, 1);
+        applySetting("cameraPanX", nextX, false);
+        applySetting("cameraPanY", nextY, false);
       }
 
-      function adjustLastRange(delta) {
-        const range = lastRange || document.querySelector(".panelPage.active input[type='range']");
-        adjustRange(range, delta);
+      function zoomCameraView(direction, multiplier = 1) {
+        const current = Number(settings.cameraZoom || 1);
+        const next = clamp(current + direction * 0.08 * multiplier, 1, 4);
+        applySetting("cameraZoom", next, false);
       }
 
-      function nudgeZoom(direction, multiplier = 1) {
-        const range = focusSetting("cameraZoom", false);
-        if (!range) return;
-        const next = clamp(Number(settings.cameraZoom || 1) + direction * 0.08 * multiplier, 1, 4);
-        range.value = String(next);
-        applySetting("cameraZoom", next);
-      }
-
-      function panByDirection(direction, multiplier = 1) {
-        const step = 0.055 * multiplier;
-        if (direction === "left") applySetting("panX", clamp(Number(settings.panX || 0) - step, -1, 1));
-        if (direction === "right") applySetting("panX", clamp(Number(settings.panX || 0) + step, -1, 1));
-        if (direction === "up") applySetting("panY", clamp(Number(settings.panY || 0) - step, -1, 1));
-        if (direction === "down") applySetting("panY", clamp(Number(settings.panY || 0) + step, -1, 1));
-        focusSetting(direction === "left" || direction === "right" ? "panX" : "panY", false);
+      function resetCameraView() {
+        applySetting("cameraZoom", 1, false);
+        applySetting("cameraPanX", 0, false);
+        applySetting("cameraPanY", 0, false);
+        showToast("Camera view centered.");
       }
 
       function setupKeyboard() {
@@ -2167,100 +2148,79 @@
           const isTyping = ["input", "textarea", "select"].includes(tag) && event.target.type !== "range";
           if (isTyping && !event.ctrlKey && !event.metaKey) return;
 
-          const rawKey = event.key;
-          const key = rawKey.toLowerCase();
-
-          if ((event.ctrlKey || event.metaKey) && key === "c") {
+          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "c") {
             event.preventDefault();
             copyPreset();
             return;
           }
-          if ((event.ctrlKey || event.metaKey) && key === "v") {
+          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "v") {
             event.preventDefault();
             pastePreset();
             return;
           }
-          if ((event.ctrlKey || event.metaKey) && key === "z") {
+          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
             event.preventDefault();
             if (event.shiftKey) redo(); else undo();
             return;
           }
-          if ((event.ctrlKey || event.metaKey) && key === "y") {
+          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "y") {
             event.preventDefault();
             redo();
             return;
           }
 
-          const number = /^\d$/.test(rawKey) ? Number(rawKey) : null;
+          const key = event.key.toLowerCase();
+          const number = /^\d$/.test(event.key) ? Number(event.key) : null;
           if (number !== null) {
             event.preventDefault();
             selectEffectByNumber(number, event.shiftKey);
             return;
           }
-
-          if (sliderShortcuts[key] && !event.metaKey && !event.ctrlKey) {
-            if (activeShortcutKey !== key) {
-              activeShortcutKey = key;
-              activeShortcutSetting = sliderShortcuts[key];
-              focusSetting(activeShortcutSetting, true);
-            }
+          if (["+", "="].includes(event.key)) {
             event.preventDefault();
+            zoomCameraView(1, event.shiftKey ? 1.5 : 1);
+            showToast("Camera zoom in.");
             return;
           }
-
-          if ((rawKey === "+" || rawKey === "=") && activeShortcutSetting === "cameraZoom") {
+          if (["-", "_"].includes(event.key)) {
             event.preventDefault();
-            nudgeZoom(1, event.shiftKey ? 2 : 1);
-            return;
-          }
-          if ((rawKey === "-" || rawKey === "_") && activeShortcutSetting === "cameraZoom") {
-            event.preventDefault();
-            nudgeZoom(-1, event.shiftKey ? 2 : 1);
+            zoomCameraView(-1, event.shiftKey ? 1.5 : 1);
+            showToast("Camera zoom out.");
             return;
           }
 
           if (["arrowup", "arrowright", "arrowdown", "arrowleft"].includes(key)) {
             event.preventDefault();
-            const big = event.shiftKey ? 5 : 1;
-            if (activeShortcutSetting) {
-              if (key === "arrowright" || key === "arrowup") adjustSetting(activeShortcutSetting, big);
-              else adjustSetting(activeShortcutSetting, -big);
+            const step = 0.04 * (event.shiftKey ? 2.4 : 1);
+            if (lastRange && document.activeElement === lastRange) {
+              const positive = key === "arrowup" || key === "arrowright";
+              adjustLastRange((positive ? 1 : -1) * (event.shiftKey ? 10 : 1));
             } else {
-              if (key === "arrowleft") panByDirection("left", big);
-              if (key === "arrowright") panByDirection("right", big);
-              if (key === "arrowup") panByDirection("up", big);
-              if (key === "arrowdown") panByDirection("down", big);
+              if (key === "arrowleft") panCameraView( step, 0);
+              if (key === "arrowright") panCameraView(-step, 0);
+              if (key === "arrowup") panCameraView(0, -step);
+              if (key === "arrowdown") panCameraView(0, step);
             }
             return;
           }
 
           switch (key) {
             case "k":
-              toggleCheatSheet();
-              event.preventDefault();
-              break;
-            case "u":
-              toggleMasterUI();
+              cheatSheet.classList.toggle("hidden");
               event.preventDefault();
               break;
             case "e": showPanel("effectsPanel"); event.preventDefault(); break;
             case "v": showPanel("visualPanel"); event.preventDefault(); break;
             case "x": showPanel("exportPanel"); event.preventDefault(); break;
             case "c": showPanel("cameraPanel"); event.preventDefault(); break;
+            case "n": switchToNextCamera(); event.preventDefault(); break;
+            case "d": toggleDualCamera(); event.preventDefault(); break;
             case "r": toggleRecording(); event.preventDefault(); break;
             case "s": saveSnapshot(); event.preventDefault(); break;
             case "b": randomizeSettings(); event.preventDefault(); break;
             case "p": toggleControls(); event.preventDefault(); break;
             case " ": togglePause(); event.preventDefault(); break;
             case "escape": cheatSheet.classList.add("hidden"); event.preventDefault(); break;
-          }
-        });
-
-        document.addEventListener("keyup", event => {
-          const key = event.key.toLowerCase();
-          if (key === activeShortcutKey) {
-            activeShortcutKey = null;
-            activeShortcutSetting = null;
           }
         });
       }
@@ -2281,30 +2241,41 @@
             }
           }
         };
-        const green = "rgba(87,255,138,0.92)";
-        const teal = "rgba(87,255,231,0.88)";
+        const green = "rgba(87,255,138,0.94)";
+        const teal = "rgba(87,255,231,0.84)";
         const orange = "rgba(255,138,40,0.88)";
-        const cactusX = cx - unit * 3;
-        const cactusY = cy - unit * 9;
-        addRect(cactusX + unit * 2, cactusY, 4, 16, green, 1);
-        addRect(cactusX + unit * 0, cactusY + unit * 5, 3, 3, teal, 1);
-        addRect(cactusX - unit * 1, cactusY + unit * 7, 3, 6, teal, 1);
-        addRect(cactusX + unit * 6, cactusY + unit * 4, 3, 3, green, 1);
-        addRect(cactusX + unit * 8, cactusY + unit * 6, 3, 6, green, 1);
-        addRect(cactusX + unit * 1, cactusY + unit * 16, 6, 2, green, 1);
 
-        for (let y = 0; y < 9; y++) {
+        // Orange desert mountain silhouette assembled from cubic bits.
+        for (let y = 0; y < 10; y++) {
+          const width = 26 - y * 2;
+          const x0 = cx - unit * 28 + y * unit;
+          const y0 = cy + unit * 12 - y * unit;
+          addRect(x0, y0, width, 1, orange, 1);
+        }
+        for (let y = 0; y < 8; y++) {
           const width = 22 - y * 2;
-          const x0 = cx - unit * 23 + y * unit;
-          const y0 = cy + unit * 9 - y * unit;
+          const x0 = cx + unit * 5 + y * unit;
+          const y0 = cy + unit * 12 - y * unit;
           addRect(x0, y0, width, 1, orange, 1);
         }
-        for (let y = 0; y < 7; y++) {
-          const width = 18 - y * 2;
-          const x0 = cx + unit * 6 + y * unit;
-          const y0 = cy + unit * 9 - y * unit;
-          addRect(x0, y0, width, 1, orange, 1);
-        }
+        addRect(cx - unit * 30, cy + unit * 12, 58, 2, "rgba(255,138,40,0.48)", 1);
+
+        // Clear saguaro-style cactus shape.
+        const cactusX = cx - unit * 10;
+        const cactusY = cy - unit * 15;
+        addRect(cactusX + unit * 9, cactusY, 3, 1, green, 1);
+        addRect(cactusX + unit * 8, cactusY + unit * 1, 5, 24, green, 1);
+        addRect(cactusX + unit * 7, cactusY + unit * 24, 7, 3, green, 1);
+        addRect(cactusX + unit * 2, cactusY + unit * 9, 4, 11, green, 1);
+        addRect(cactusX + unit * 3, cactusY + unit * 8, 2, 1, green, 1);
+        addRect(cactusX + unit * 5, cactusY + unit * 17, 4, 4, green, 1);
+        addRect(cactusX + unit * 15, cactusY + unit * 6, 4, 12, green, 1);
+        addRect(cactusX + unit * 16, cactusY + unit * 5, 2, 1, green, 1);
+        addRect(cactusX + unit * 12, cactusY + unit * 13, 4, 4, green, 1);
+        addRect(cactusX + unit * 9, cactusY + unit * 3, 1, 20, teal, 2);
+        addRect(cactusX + unit * 12, cactusY + unit * 4, 1, 18, teal, 2);
+        addRect(cactusX + unit * 3, cactusY + unit * 10, 1, 8, teal, 2);
+        addRect(cactusX + unit * 17, cactusY + unit * 7, 1, 9, teal, 2);
         return targets.map((target, index) => ({
           ...target,
           sx: rand(-w * 0.12, w * 1.12),
@@ -2319,7 +2290,7 @@
         loaderScreen.classList.remove("hidden");
         resizeLoader();
         const targets = generateLoaderTargets();
-        const duration = 2700;
+        const duration = 4000;
         const start = performance.now();
         const text = document.getElementById("loaderText");
 
@@ -2367,12 +2338,12 @@
         resizeLoader();
         setupControls();
         setupKeyboard();
+        refreshCameraList(false);
+        homeScreen.classList.remove("hidden");
+        loaderScreen.classList.add("hidden");
         window.addEventListener("resize", () => {
           resizeCanvas();
           resizeLoader();
-        });
-        playLoader(() => {
-          homeScreen.classList.remove("hidden");
         });
       }
 
