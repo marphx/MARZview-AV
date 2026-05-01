@@ -1,0 +1,2068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>MARZview</title>
+  <style>
+    :root {
+      --bg: #030606;
+      --panel: rgba(2, 12, 13, 0.74);
+      --panel-strong: rgba(5, 20, 22, 0.92);
+      --line: rgba(93, 255, 229, 0.28);
+      --line-hot: rgba(255, 135, 41, 0.42);
+      --teal: #57ffe7;
+      --green: #57ff8a;
+      --orange: #ff8a28;
+      --blue: #78a7ff;
+      --pink: #ff6de9;
+      --text: #eafffb;
+      --muted: rgba(234, 255, 251, 0.68);
+      --danger: #ff5478;
+      --radius: 18px;
+      --shadow: 0 0 22px rgba(87, 255, 231, 0.23), 0 0 80px rgba(52, 255, 145, 0.10);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-top: env(safe-area-inset-top, 0px);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      touch-action: manipulation;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    .hidden { display: none !important; }
+
+    #appShell {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(87, 255, 231, 0.12), transparent 26%),
+        radial-gradient(circle at 83% 80%, rgba(255, 138, 40, 0.12), transparent 30%),
+        linear-gradient(135deg, #020303 0%, #041112 52%, #060607 100%);
+    }
+
+    #visualCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      background: #000;
+    }
+
+    #videoSource, #sourceCanvas, #scratchCanvas {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+      left: -9999px;
+      top: -9999px;
+    }
+
+    .screen {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 12% 80%, rgba(87, 255, 231, 0.11), transparent 30%),
+        radial-gradient(circle at 80% 20%, rgba(255, 138, 40, 0.12), transparent 32%),
+        #020606;
+    }
+
+    #loaderScreen {
+      z-index: 50;
+      background: #020606;
+    }
+
+    #loaderCanvas {
+      position: absolute;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+    }
+
+    .loaderText {
+      position: absolute;
+      left: 50%;
+      bottom: 12vh;
+      transform: translateX(-50%);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-size: clamp(0.9rem, 2.5vw, 1.45rem);
+      color: #d8fff5;
+      text-shadow: 0 0 10px rgba(87, 255, 231, 0.9), 0 0 32px rgba(87, 255, 231, 0.45);
+      white-space: nowrap;
+    }
+
+    .loaderText::after {
+      content: "▌";
+      margin-left: 0.18em;
+      animation: cursorBlink 0.55s steps(1) infinite;
+    }
+
+    @keyframes cursorBlink { 50% { opacity: 0; } }
+
+    #homeScreen {
+      z-index: 30;
+    }
+
+    .homeCard {
+      position: relative;
+      width: min(980px, 94vw);
+      min-height: min(640px, 86vh);
+      border: 1px solid rgba(87, 255, 231, 0.24);
+      border-radius: 28px;
+      background:
+        linear-gradient(140deg, rgba(3, 22, 22, 0.84), rgba(2, 6, 6, 0.72)),
+        repeating-linear-gradient(90deg, rgba(87, 255, 231, 0.03) 0 1px, transparent 1px 9px);
+      box-shadow: var(--shadow), inset 0 0 60px rgba(87, 255, 231, 0.06);
+      padding: clamp(20px, 5vw, 56px);
+      overflow: hidden;
+    }
+
+    .homeCard::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background:
+        conic-gradient(from 0deg, transparent, rgba(87, 255, 231, 0.12), transparent, rgba(255, 138, 40, 0.10), transparent);
+      animation: slowRotate 16s linear infinite;
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    .homeInner {
+      position: relative;
+      z-index: 1;
+      min-height: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 28px;
+    }
+
+    @keyframes slowRotate { to { transform: rotate(360deg); } }
+
+    .pixelTitle {
+      display: flex;
+      gap: clamp(4px, 0.9vw, 10px);
+      align-items: flex-start;
+      flex-wrap: wrap;
+      filter: drop-shadow(0 0 14px rgba(87, 255, 231, 0.7));
+    }
+
+    .pixelLetter {
+      display: grid;
+      grid-template-columns: repeat(5, var(--pxSize));
+      grid-template-rows: repeat(7, var(--pxSize));
+      gap: max(1px, calc(var(--pxSize) * 0.18));
+      --pxSize: clamp(7px, 1.5vw, 17px);
+    }
+
+    .pixelLetter.small {
+      --pxSize: 5px;
+      gap: 1px;
+    }
+
+    .px {
+      width: var(--pxSize);
+      height: var(--pxSize);
+      border-radius: 2px;
+      background: linear-gradient(145deg, #eafffb, var(--teal) 58%, #0b8f88);
+      box-shadow: 0 0 9px rgba(87, 255, 231, 0.9), inset -1px -1px rgba(0, 0, 0, 0.35);
+      opacity: 0.88;
+      animation: blockPulse 1.9s steps(2, end) infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    .px.hot {
+      background: linear-gradient(145deg, #fff4cc, var(--orange) 55%, #a84300);
+      box-shadow: 0 0 10px rgba(255, 138, 40, 0.9), inset -1px -1px rgba(0, 0, 0, 0.35);
+    }
+
+    @keyframes blockPulse {
+      0%, 100% { opacity: 0.95; transform: translate(0, 0) scale(1); }
+      18% { opacity: 0.35; transform: translateY(1px) scale(0.96); }
+      23% { opacity: 1; transform: translateX(-1px) scale(1.05); }
+      47% { opacity: 0.68; }
+      61% { opacity: 1; transform: translateX(1px) scale(1); }
+    }
+
+    .homeCopy {
+      max-width: 660px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: clamp(0.95rem, 2vw, 1.22rem);
+      text-shadow: 0 0 10px rgba(87, 255, 231, 0.12);
+    }
+
+    .homeActions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    .launchWrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: clamp(24px, 6vh, 64px);
+      width: 100%;
+    }
+
+    .launchHint {
+      color: rgba(234, 255, 251, 0.58);
+      font-size: clamp(0.72rem, 1.6vw, 0.92rem);
+      text-align: center;
+      line-height: 1.45;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .enterButton {
+      min-width: min(280px, 72vw);
+      padding: 16px 32px;
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      letter-spacing: 0.24em;
+    }
+
+    .designer {
+      position: absolute;
+      right: clamp(18px, 4vw, 44px);
+      bottom: clamp(18px, 4vw, 44px);
+      color: rgba(234, 255, 251, 0.82);
+      text-align: right;
+      font-size: clamp(0.72rem, 1.5vw, 0.95rem);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .primaryButton, .ghostButton, .miniButton {
+      border: 1px solid rgba(87, 255, 231, 0.34);
+      border-radius: 999px;
+      color: var(--text);
+      background: rgba(5, 32, 33, 0.72);
+      box-shadow: 0 0 18px rgba(87, 255, 231, 0.13), inset 0 0 18px rgba(87, 255, 231, 0.06);
+      padding: 12px 18px;
+      cursor: pointer;
+      transition: transform 140ms ease, border 140ms ease, background 140ms ease, box-shadow 140ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .primaryButton {
+      background: linear-gradient(145deg, rgba(87, 255, 231, 0.24), rgba(255, 138, 40, 0.12));
+      border-color: rgba(255, 138, 40, 0.52);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 800;
+    }
+
+    .ghostButton:hover, .miniButton:hover, .primaryButton:hover,
+    .ghostButton:focus-visible, .miniButton:focus-visible, .primaryButton:focus-visible {
+      outline: none;
+      transform: translateY(-1px);
+      border-color: rgba(87, 255, 231, 0.82);
+      box-shadow: 0 0 22px rgba(87, 255, 231, 0.32), inset 0 0 20px rgba(87, 255, 231, 0.10);
+    }
+
+    .miniButton {
+      padding: 8px 12px;
+      font-size: 0.78rem;
+    }
+
+    #topBar {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      top: calc(10px + var(--safe-top));
+      z-index: 12;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .brandBug, .statusPill {
+      pointer-events: auto;
+      border: 1px solid rgba(87, 255, 231, 0.26);
+      background: rgba(1, 9, 9, 0.62);
+      backdrop-filter: blur(14px);
+      border-radius: 16px;
+      box-shadow: 0 0 22px rgba(87, 255, 231, 0.1);
+    }
+
+    .brandBug {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+    }
+
+    .brandBugText {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 110px;
+    }
+
+    .brandName {
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      color: #eafffb;
+      text-shadow: 0 0 9px rgba(87, 255, 231, 0.6);
+      font-size: 0.86rem;
+    }
+
+    .brandSub {
+      color: var(--muted);
+      font-size: 0.66rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .statusPill {
+      padding: 10px 12px;
+      color: rgba(234, 255, 251, 0.82);
+      font-size: 0.76rem;
+      max-width: min(420px, 62vw);
+      line-height: 1.35;
+    }
+
+    #controlDock {
+      position: fixed;
+      left: 12px;
+      bottom: calc(12px + var(--safe-bottom));
+      z-index: 15;
+      width: min(430px, calc(100vw - 24px));
+      max-height: min(74vh, 740px);
+      overflow: hidden;
+      border: 1px solid rgba(87, 255, 231, 0.24);
+      border-radius: var(--radius);
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+      transition: transform 220ms ease, opacity 220ms ease;
+    }
+
+    #controlDock.collapsed {
+      transform: translateY(calc(100% - 58px));
+      opacity: 0.92;
+    }
+
+    .dockHeader {
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(87, 255, 231, 0.16);
+      background: rgba(1, 10, 10, 0.54);
+    }
+
+    .dockHeader strong {
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 0.86rem;
+    }
+
+    .dockBody {
+      padding: 12px;
+      overflow: auto;
+      max-height: calc(min(74vh, 740px) - 58px);
+      scrollbar-width: thin;
+    }
+
+    .panelTabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .panelTab {
+      border: 1px solid rgba(87, 255, 231, 0.22);
+      background: rgba(2, 14, 15, 0.6);
+      color: rgba(234, 255, 251, 0.82);
+      border-radius: 12px;
+      padding: 8px 4px;
+      cursor: pointer;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .panelTab.active {
+      border-color: rgba(255, 138, 40, 0.6);
+      color: #fff4dd;
+      box-shadow: 0 0 15px rgba(255, 138, 40, 0.18);
+    }
+
+    .panelPage { display: none; }
+    .panelPage.active { display: block; }
+
+    .sectionTitle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 12px 0 8px;
+      color: #dffff9;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.76rem;
+    }
+
+    .controlRow {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid rgba(87, 255, 231, 0.13);
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.18);
+    }
+
+    .controlRow label {
+      display: block;
+      color: rgba(234, 255, 251, 0.88);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .controlRow small {
+      display: block;
+      color: rgba(234, 255, 251, 0.52);
+      margin-top: 3px;
+      line-height: 1.35;
+    }
+
+    .valueReadout {
+      min-width: 44px;
+      text-align: right;
+      color: #bfffee;
+      font-size: 0.78rem;
+    }
+
+    input[type="range"] {
+      grid-column: 1 / -1;
+      width: 100%;
+      accent-color: var(--teal);
+    }
+
+    input[type="range"]:focus-visible {
+      outline: 2px solid rgba(255, 138, 40, 0.75);
+      outline-offset: 4px;
+      border-radius: 12px;
+    }
+
+    select {
+      width: 100%;
+      border: 1px solid rgba(87, 255, 231, 0.24);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--text);
+      background: rgba(3, 20, 21, 0.92);
+      margin: 6px 0 10px;
+    }
+
+    .buttonGrid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .buttonGrid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    #cheatSheet {
+      position: fixed;
+      right: 12px;
+      bottom: calc(12px + var(--safe-bottom));
+      z-index: 16;
+      width: min(470px, calc(100vw - 24px));
+      max-height: min(70vh, 720px);
+      overflow: auto;
+      border: 1px solid rgba(255, 138, 40, 0.34);
+      border-radius: var(--radius);
+      background: rgba(3, 11, 12, 0.86);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 0 28px rgba(255, 138, 40, 0.16), 0 0 80px rgba(87, 255, 231, 0.08);
+      padding: 14px;
+    }
+
+    #cheatSheet h3 {
+      margin: 0 0 10px;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .keyGrid {
+      display: grid;
+      grid-template-columns: minmax(92px, auto) 1fr;
+      gap: 8px 12px;
+      font-size: 0.8rem;
+    }
+
+    kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 26px;
+      padding: 3px 7px;
+      border: 1px solid rgba(87, 255, 231, 0.34);
+      border-bottom-color: rgba(87, 255, 231, 0.15);
+      border-radius: 7px;
+      background: rgba(87, 255, 231, 0.10);
+      color: #eafffb;
+      box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.32);
+      font-size: 0.75rem;
+    }
+
+    #toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(26px + var(--safe-bottom));
+      transform: translateX(-50%) translateY(18px);
+      z-index: 70;
+      max-width: min(560px, calc(100vw - 32px));
+      padding: 12px 14px;
+      border: 1px solid rgba(87, 255, 231, 0.34);
+      border-radius: 14px;
+      background: rgba(2, 13, 14, 0.88);
+      color: #eafffb;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 180ms ease, transform 180ms ease;
+      text-align: center;
+      line-height: 1.35;
+      font-size: 0.82rem;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .meterWrap {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .meter {
+      height: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(87, 255, 231, 0.14);
+    }
+
+    .meter > span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--teal), var(--green), var(--orange));
+      box-shadow: 0 0 12px rgba(87, 255, 231, 0.72);
+    }
+
+    .tinyNote {
+      color: rgba(234, 255, 251, 0.56);
+      line-height: 1.45;
+      font-size: 0.78rem;
+      margin: 8px 0 0;
+    }
+
+    .recDot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--danger);
+      margin-right: 6px;
+      box-shadow: 0 0 12px rgba(255, 84, 120, 0.8);
+      animation: recPulse 0.8s ease-in-out infinite alternate;
+      vertical-align: middle;
+    }
+
+    @keyframes recPulse { to { opacity: 0.35; transform: scale(0.76); } }
+
+    .cornerHint {
+      position: fixed;
+      right: 14px;
+      top: calc(12px + var(--safe-top));
+      z-index: 10;
+      color: rgba(234, 255, 251, 0.58);
+      text-align: right;
+      font-size: 0.7rem;
+      line-height: 1.35;
+      pointer-events: none;
+    }
+
+    @media (max-width: 780px) {
+      .homeCard { min-height: 84vh; }
+      .designer { right: 22px; bottom: 22px; }
+      .homeCopy { padding-bottom: 44px; }
+      #controlDock { max-height: 64vh; }
+      .panelTabs { grid-template-columns: repeat(2, 1fr); }
+      .statusPill { display: none; }
+      .brandBugText { display: none; }
+    }
+
+    @media (orientation: landscape) and (max-height: 520px) {
+      .homeCard { min-height: 86vh; padding: 18px 22px; }
+      .homeCopy { font-size: 0.86rem; max-width: 560px; padding-bottom: 0; }
+      .designer { font-size: 0.66rem; }
+      .pixelLetter { --pxSize: clamp(5px, 1.6vw, 11px); }
+      #controlDock { max-height: calc(100vh - 92px); width: min(560px, 48vw); }
+      #cheatSheet { max-height: calc(100vh - 92px); width: min(520px, 48vw); }
+    }
+  </style>
+</head>
+<body>
+  <div id="appShell">
+    <canvas id="visualCanvas" aria-label="MARZview audio reactive camera canvas"></canvas>
+    <video id="videoSource" playsinline autoplay muted></video>
+    <canvas id="sourceCanvas"></canvas>
+    <canvas id="scratchCanvas"></canvas>
+
+    <div id="topBar" class="hidden">
+      <div class="brandBug">
+        <div id="tinyPixelTitle" class="pixelTitle" aria-hidden="true"></div>
+        <div class="brandBugText">
+          <span class="brandName">MARZview</span>
+          <span class="brandSub">live audio-video neon synth engine</span>
+        </div>
+      </div>
+      <div id="statusPill" class="statusPill">Ready. Press <kbd>K</kbd> for keyboard controls.</div>
+    </div>
+
+    <div id="cornerHint" class="cornerHint hidden">Bluetooth keyboard ready<br/>K = cheat sheet • E/V/X/C = panels</div>
+
+    <section id="homeScreen" class="screen" aria-label="Home screen">
+      <div class="homeCard">
+        <div class="homeInner">
+          <div>
+            <div id="homePixelTitle" class="pixelTitle" aria-label="MARZview"></div>
+            <p class="homeCopy">
+              Camera becomes luminous signal. Microphone becomes motion. Stack two neon synth visuals, bend their texture, trail, glow, bitrate, and color drift, then record the live canvas with audio.
+            </p>
+            <div class="launchWrap">
+              <button id="enterButton" class="primaryButton enterButton">Enter</button>
+              <div class="homeActions">
+                <button id="demoButton" class="ghostButton">Open Demo Visualizer</button>
+              </div>
+              <p class="launchHint">Home screen loads first. The loading screen only appears when you launch into the app.</p>
+            </div>
+            <p class="tinyNote">For iPhone/iPad, start from a tap so Safari can unlock camera, mic, and audio analysis. MP4 export appears when the browser supports MediaRecorder MP4; otherwise the app records a WebM fallback.</p>
+          </div>
+          <div class="designer">Designed by<br/>Mario Garcia</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="loaderScreen" class="screen hidden" aria-label="Loading screen">
+      <canvas id="loaderCanvas"></canvas>
+      <div id="loaderText" class="loaderText">loading...</div>
+    </section>
+
+    <div id="controlDock" class="collapsed hidden" aria-label="Control panels">
+      <div class="dockHeader">
+        <strong>Controls</strong>
+        <div>
+          <button id="randomizeButton" class="miniButton" title="Randomize look">Dice</button>
+          <button id="collapseButton" class="miniButton" title="Collapse controls">Hide</button>
+        </div>
+      </div>
+      <div class="dockBody">
+        <div class="panelTabs" role="tablist" aria-label="MARZview panels">
+          <button class="panelTab active" data-panel="effectsPanel">E Effects</button>
+          <button class="panelTab" data-panel="visualPanel">V Visual</button>
+          <button class="panelTab" data-panel="exportPanel">X Export</button>
+          <button class="panelTab" data-panel="cameraPanel">C Camera</button>
+        </div>
+
+        <div id="effectsPanel" class="panelPage active">
+          <div class="sectionTitle">Stack two effects <span>1–0 / Shift+1–0</span></div>
+          <label for="primarySelect">Primary effect</label>
+          <select id="primarySelect" data-setting="primaryEffect"></select>
+          <label for="secondarySelect">Secondary effect</label>
+          <select id="secondarySelect" data-setting="secondaryEffect"></select>
+
+          <div class="controlRow">
+            <div><label for="primaryMix">Primary mix</label><small>Main visual strength.</small></div><span class="valueReadout" id="primaryMixVal"></span>
+            <input id="primaryMix" type="range" min="0" max="1" step="0.01" data-setting="primaryMix" />
+          </div>
+          <div class="controlRow">
+            <div><label for="secondaryMix">Secondary mix</label><small>Stacked layer strength.</small></div><span class="valueReadout" id="secondaryMixVal"></span>
+            <input id="secondaryMix" type="range" min="0" max="1" step="0.01" data-setting="secondaryMix" />
+          </div>
+          <div class="controlRow">
+            <div><label for="intensity">Intensity</label><small>Overall energy and brightness response.</small></div><span class="valueReadout" id="intensityVal"></span>
+            <input id="intensity" type="range" min="0" max="1" step="0.01" data-setting="intensity" />
+          </div>
+          <div class="controlRow">
+            <div><label for="audioSensitivity">Audio response</label><small>How hard the microphone pushes the visuals.</small></div><span class="valueReadout" id="audioSensitivityVal"></span>
+            <input id="audioSensitivity" type="range" min="0" max="1.8" step="0.01" data-setting="audioSensitivity" />
+          </div>
+        </div>
+
+        <div id="visualPanel" class="panelPage">
+          <div class="sectionTitle">Texture engine <span>Arrows adjust selected slider</span></div>
+          <div class="controlRow">
+            <div><label for="glow">Glow</label><small>Halo bloom around particles and outlines.</small></div><span class="valueReadout" id="glowVal"></span>
+            <input id="glow" type="range" min="0" max="1" step="0.01" data-setting="glow" />
+          </div>
+          <div class="controlRow">
+            <div><label for="texture">Texture</label><small>Granularity, grit, scan detail, and point density.</small></div><span class="valueReadout" id="textureVal"></span>
+            <input id="texture" type="range" min="0" max="1" step="0.01" data-setting="texture" />
+          </div>
+          <div class="controlRow">
+            <div><label for="bitrate">Visual bitrate</label><small>Pixel depth/resolution feel. Lower is chunkier.</small></div><span class="valueReadout" id="bitrateVal"></span>
+            <input id="bitrate" type="range" min="0" max="1" step="0.01" data-setting="bitrate" />
+          </div>
+          <div class="controlRow">
+            <div><label for="trail">Trail</label><small>Motion decay and neon afterimage.</small></div><span class="valueReadout" id="trailVal"></span>
+            <input id="trail" type="range" min="0" max="1" step="0.01" data-setting="trail" />
+          </div>
+          <div class="controlRow">
+            <div><label for="edgeBoost">Edge boost</label><small>Outline strength and subject separation.</small></div><span class="valueReadout" id="edgeBoostVal"></span>
+            <input id="edgeBoost" type="range" min="0" max="1" step="0.01" data-setting="edgeBoost" />
+          </div>
+          <div class="controlRow">
+            <div><label for="colorDrift">Color drift</label><small>Hue movement, chromatic lift, vapor spread.</small></div><span class="valueReadout" id="colorDriftVal"></span>
+            <input id="colorDrift" type="range" min="0" max="1" step="0.01" data-setting="colorDrift" />
+          </div>
+          <div class="controlRow">
+            <div><label for="feedback">Feedback</label><small>Recursive glow and echo glass smear.</small></div><span class="valueReadout" id="feedbackVal"></span>
+            <input id="feedback" type="range" min="0" max="1" step="0.01" data-setting="feedback" />
+          </div>
+          <div class="controlRow">
+            <div><label for="zoom">Zoom warp</label><small>Subtle pulsing push toward the camera.</small></div><span class="valueReadout" id="zoomVal"></span>
+            <input id="zoom" type="range" min="0" max="1" step="0.01" data-setting="zoom" />
+          </div>
+        </div>
+
+        <div id="exportPanel" class="panelPage">
+          <div class="sectionTitle">Record canvas + mic <span>R toggles</span></div>
+          <div class="buttonGrid">
+            <button id="recordButton" class="ghostButton">Start Recording</button>
+            <button id="snapshotButton" class="ghostButton">Save PNG</button>
+            <button id="copyPresetButton" class="ghostButton">Copy Preset</button>
+            <button id="resetButton" class="ghostButton">Reset</button>
+          </div>
+          <div class="controlRow">
+            <div><label for="exportBitrate">Export bitrate</label><small>Recorder target video Mbps, when supported by browser.</small></div><span class="valueReadout" id="exportBitrateVal"></span>
+            <input id="exportBitrate" type="range" min="1" max="18" step="0.5" data-setting="exportBitrate" />
+          </div>
+          <div class="controlRow">
+            <div><label for="fps">FPS</label><small>Canvas stream frame rate.</small></div><span class="valueReadout" id="fpsVal"></span>
+            <input id="fps" type="range" min="12" max="60" step="1" data-setting="fps" />
+          </div>
+          <p id="recordingStatus" class="tinyNote">Not recording. MP4 is used only on browsers that expose MP4 MediaRecorder support; WebM is the fallback.</p>
+        </div>
+
+        <div id="cameraPanel" class="panelPage">
+          <div class="sectionTitle">Camera + engine <span>C panel</span></div>
+          <div class="buttonGrid three">
+            <button id="restartMediaButton" class="ghostButton">Restart</button>
+            <button id="pauseButton" class="ghostButton">Pause</button>
+            <button id="homeButton" class="ghostButton">Home</button>
+          </div>
+          <div class="controlRow">
+            <div><label for="cameraAlpha">Camera ghost</label><small>Faint original video under the visuals.</small></div><span class="valueReadout" id="cameraAlphaVal"></span>
+            <input id="cameraAlpha" type="range" min="0" max="0.6" step="0.01" data-setting="cameraAlpha" />
+          </div>
+          <div class="meterWrap">
+            <div><small>Volume</small><div class="meter"><span id="volumeMeter"></span></div></div>
+            <div><small>Bass</small><div class="meter"><span id="bassMeter"></span></div></div>
+            <div><small>Motion</small><div class="meter"><span id="motionMeter"></span></div></div>
+          </div>
+          <p class="tinyNote">Use the main Start button for real camera/microphone input. Demo mode creates synthetic motion so the visuals still run without permissions.</p>
+        </div>
+      </div>
+    </div>
+
+    <aside id="cheatSheet" class="hidden" aria-label="Keyboard cheat sheet">
+      <h3>Keyboard cheat sheet</h3>
+      <div class="keyGrid">
+        <div><kbd>K</kbd></div><div>Show / hide this cheat sheet.</div>
+        <div><kbd>E</kbd> <kbd>V</kbd> <kbd>X</kbd> <kbd>C</kbd></div><div>Open Effects, Visual, Export, or Camera panel.</div>
+        <div><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd></div><div>Adjust the focused or most recently touched slider. Hold Shift for larger jumps.</div>
+        <div><kbd>1</kbd>–<kbd>0</kbd></div><div>Change primary effect.</div>
+        <div><kbd>Shift</kbd> + <kbd>1</kbd>–<kbd>0</kbd></div><div>Change secondary effect.</div>
+        <div><kbd>R</kbd></div><div>Start / stop recording.</div>
+        <div><kbd>S</kbd></div><div>Save a PNG snapshot.</div>
+        <div><kbd>B</kbd></div><div>Randomize settings.</div>
+        <div><kbd>P</kbd></div><div>Show / hide the control dock.</div>
+        <div><kbd>Space</kbd></div><div>Pause / resume visual engine.</div>
+        <div><kbd>Ctrl</kbd> + <kbd>C</kbd></div><div>Copy the current preset JSON.</div>
+        <div><kbd>Ctrl</kbd> + <kbd>V</kbd></div><div>Paste a preset JSON from clipboard, if available.</div>
+        <div><kbd>Ctrl</kbd> + <kbd>Z</kbd></div><div>Undo setting change.</div>
+        <div><kbd>Ctrl</kbd> + <kbd>Y</kbd></div><div>Redo setting change.</div>
+      </div>
+    </aside>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const EFFECTS = [
+        { id: "tealBits", name: "Teal Bit Bloom" },
+        { id: "edgeTrails", name: "Glow Edge Trails" },
+        { id: "auroraWash", name: "Aurora Wash" },
+        { id: "prismGhost", name: "Prism Ghosts" },
+        { id: "chromaticVapor", name: "Chromatic Vapor" },
+        { id: "plasmaScan", name: "Plasma Scanlines" },
+        { id: "constellation", name: "Luma Constellation" },
+        { id: "gridMelt", name: "Synth Grid Melt" },
+        { id: "solarDream", name: "Solar Dream" },
+        { id: "echoGlass", name: "Echo Glass" }
+      ];
+
+      const PIXEL_FONT = {
+        A: ["01110","10001","10001","11111","10001","10001","10001"],
+        C: ["01111","10000","10000","10000","10000","10000","01111"],
+        D: ["11110","10001","10001","10001","10001","10001","11110"],
+        E: ["11111","10000","10000","11110","10000","10000","11111"],
+        I: ["11111","00100","00100","00100","00100","00100","11111"],
+        M: ["10001","11011","10101","10101","10001","10001","10001"],
+        R: ["11110","10001","10001","11110","10100","10010","10001"],
+        V: ["10001","10001","10001","10001","10001","01010","00100"],
+        W: ["10001","10001","10001","10101","10101","10101","01010"],
+        Z: ["11111","00001","00010","00100","01000","10000","11111"],
+        0: ["01110","10001","10011","10101","11001","10001","01110"],
+        1: ["00100","01100","00100","00100","00100","00100","01110"],
+        2: ["01110","10001","00001","00010","00100","01000","11111"],
+        3: ["11110","00001","00001","01110","00001","00001","11110"],
+        4: ["10010","10010","10010","11111","00010","00010","00010"],
+        5: ["11111","10000","10000","11110","00001","00001","11110"],
+        6: ["01110","10000","10000","11110","10001","10001","01110"],
+        7: ["11111","00001","00010","00100","01000","01000","01000"],
+        8: ["01110","10001","10001","01110","10001","10001","01110"],
+        9: ["01110","10001","10001","01111","00001","00001","01110"],
+        " ": ["00000","00000","00000","00000","00000","00000","00000"]
+      };
+
+      const defaultSettings = Object.freeze({
+        primaryEffect: "tealBits",
+        secondaryEffect: "edgeTrails",
+        primaryMix: 1,
+        secondaryMix: 0.62,
+        intensity: 0.82,
+        audioSensitivity: 0.92,
+        glow: 0.74,
+        texture: 0.58,
+        bitrate: 0.64,
+        trail: 0.66,
+        edgeBoost: 0.72,
+        colorDrift: 0.45,
+        feedback: 0.24,
+        zoom: 0.2,
+        cameraAlpha: 0.06,
+        exportBitrate: 8,
+        fps: 30
+      });
+
+      let settings = { ...defaultSettings };
+      let undoStack = [];
+      let redoStack = [];
+      let isApplyingHistory = false;
+      let lastRange = null;
+      let isRunning = false;
+      let isPaused = false;
+      let demoMode = false;
+      let mediaStream = null;
+      let audioContext = null;
+      let analyser = null;
+      let freqData = null;
+      let timeData = null;
+      let previousData = null;
+      let frameCount = 0;
+      let startTime = performance.now();
+      let lastFrameTime = 0;
+      let audioState = { volume: 0, bass: 0, mid: 0, treble: 0, motion: 0, smoothed: 0 };
+      let mediaRecorder = null;
+      let recordedChunks = [];
+      let recorderMime = "";
+
+      const canvas = document.getElementById("visualCanvas");
+      const ctx = canvas.getContext("2d", { alpha: false });
+      const video = document.getElementById("videoSource");
+      const sourceCanvas = document.getElementById("sourceCanvas");
+      const sourceCtx = sourceCanvas.getContext("2d", { willReadFrequently: true });
+      const scratchCanvas = document.getElementById("scratchCanvas");
+      const scratchCtx = scratchCanvas.getContext("2d", { willReadFrequently: true });
+      const loaderCanvas = document.getElementById("loaderCanvas");
+      const loaderCtx = loaderCanvas.getContext("2d");
+      const homeScreen = document.getElementById("homeScreen");
+      const loaderScreen = document.getElementById("loaderScreen");
+      const controlDock = document.getElementById("controlDock");
+      const cheatSheet = document.getElementById("cheatSheet");
+      const toast = document.getElementById("toast");
+      const statusPill = document.getElementById("statusPill");
+      const topBar = document.getElementById("topBar");
+      const cornerHint = document.getElementById("cornerHint");
+      const volumeMeter = document.getElementById("volumeMeter");
+      const bassMeter = document.getElementById("bassMeter");
+      const motionMeter = document.getElementById("motionMeter");
+
+      function clamp(v, min = 0, max = 1) { return Math.max(min, Math.min(max, v)); }
+      function lerp(a, b, t) { return a + (b - a) * t; }
+      function map(v, inMin, inMax, outMin, outMax) { return outMin + (outMax - outMin) * ((v - inMin) / (inMax - inMin)); }
+      function nowSeconds(now) { return (now - startTime) / 1000; }
+      function rand(min, max) { return Math.random() * (max - min) + min; }
+      function luminanceAt(data, i) { return data[i] * 0.2126 + data[i + 1] * 0.7152 + data[i + 2] * 0.0722; }
+      function cssColor(h, s, l, a = 1) { return `hsla(${h}, ${s}%, ${l}%, ${a})`; }
+
+      function buildPixelTitle(text, container, small = false) {
+        container.innerHTML = "";
+        const chars = String(text).toUpperCase().split("");
+        chars.forEach((char, charIndex) => {
+          const grid = PIXEL_FONT[char] || PIXEL_FONT[" "];
+          const letter = document.createElement("div");
+          letter.className = "pixelLetter" + (small ? " small" : "");
+          letter.setAttribute("aria-hidden", "true");
+          grid.forEach((row, y) => {
+            row.split("").forEach((bit, x) => {
+              const px = document.createElement("span");
+              if (bit === "1") {
+                px.className = "px" + ((charIndex + x + y) % 7 === 0 ? " hot" : "");
+                px.style.setProperty("--delay", `${((charIndex * 13 + x * 5 + y * 3) % 31) / 18}s`);
+              }
+              letter.appendChild(px);
+            });
+          });
+          container.appendChild(letter);
+        });
+      }
+
+      buildPixelTitle("MARZVIEW", document.getElementById("homePixelTitle"));
+      buildPixelTitle("M", document.getElementById("tinyPixelTitle"), true);
+
+      function populateEffects() {
+        const primary = document.getElementById("primarySelect");
+        const secondary = document.getElementById("secondarySelect");
+        EFFECTS.forEach(effect => {
+          const opt1 = new Option(effect.name, effect.id);
+          const opt2 = new Option(effect.name, effect.id);
+          primary.add(opt1);
+          secondary.add(opt2);
+        });
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add("show");
+        window.clearTimeout(showToast._timer);
+        showToast._timer = window.setTimeout(() => toast.classList.remove("show"), 2400);
+      }
+
+      function setStatus(message) {
+        statusPill.innerHTML = message;
+      }
+
+      function resizeCanvas() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.max(1, Math.floor(window.innerWidth * dpr));
+        canvas.height = Math.max(1, Math.floor(window.innerHeight * dpr));
+        canvas.style.width = window.innerWidth + "px";
+        canvas.style.height = window.innerHeight + "px";
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        previousData = null;
+      }
+
+      function resizeLoader() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        loaderCanvas.width = Math.max(1, Math.floor(window.innerWidth * dpr));
+        loaderCanvas.height = Math.max(1, Math.floor(window.innerHeight * dpr));
+        loaderCanvas.style.width = window.innerWidth + "px";
+        loaderCanvas.style.height = window.innerHeight + "px";
+      }
+
+      function updateControlsFromSettings() {
+        Object.entries(settings).forEach(([key, value]) => {
+          const el = document.querySelector(`[data-setting="${key}"]`);
+          if (!el) return;
+          el.value = value;
+          const readout = document.getElementById(`${el.id}Val`);
+          if (readout) {
+            readout.textContent = el.type === "range" ? formatValue(key, Number(value)) : "";
+          }
+        });
+      }
+
+      function formatValue(key, value) {
+        if (key === "fps") return `${Math.round(value)}`;
+        if (key === "exportBitrate") return `${value.toFixed(1)}M`;
+        return `${Math.round(value * 100)}%`;
+      }
+
+      function applySetting(key, rawValue, pushHistory = true) {
+        const old = JSON.stringify(settings);
+        const numeric = typeof settings[key] === "number";
+        settings[key] = numeric ? Number(rawValue) : rawValue;
+        if (pushHistory && old !== JSON.stringify(settings) && !isApplyingHistory) {
+          undoStack.push(JSON.parse(old));
+          undoStack = undoStack.slice(-80);
+          redoStack.length = 0;
+        }
+        updateControlsFromSettings();
+      }
+
+      function applyFullSettings(next, pushHistory = true) {
+        const cleaned = { ...settings };
+        Object.keys(settings).forEach(key => {
+          if (Object.prototype.hasOwnProperty.call(next, key)) {
+            const numeric = typeof settings[key] === "number";
+            cleaned[key] = numeric ? Number(next[key]) : next[key];
+          }
+        });
+        if (!EFFECTS.some(e => e.id === cleaned.primaryEffect)) cleaned.primaryEffect = defaultSettings.primaryEffect;
+        if (!EFFECTS.some(e => e.id === cleaned.secondaryEffect)) cleaned.secondaryEffect = defaultSettings.secondaryEffect;
+        if (pushHistory && !isApplyingHistory) undoStack.push({ ...settings });
+        settings = cleaned;
+        updateControlsFromSettings();
+      }
+
+      function undo() {
+        if (!undoStack.length) return showToast("Nothing to undo yet.");
+        redoStack.push({ ...settings });
+        isApplyingHistory = true;
+        settings = undoStack.pop();
+        updateControlsFromSettings();
+        isApplyingHistory = false;
+        showToast("Undo applied.");
+      }
+
+      function redo() {
+        if (!redoStack.length) return showToast("Nothing to redo yet.");
+        undoStack.push({ ...settings });
+        isApplyingHistory = true;
+        settings = redoStack.pop();
+        updateControlsFromSettings();
+        isApplyingHistory = false;
+        showToast("Redo applied.");
+      }
+
+      function randomizeSettings() {
+        undoStack.push({ ...settings });
+        const p = EFFECTS[Math.floor(Math.random() * EFFECTS.length)].id;
+        let s = EFFECTS[Math.floor(Math.random() * EFFECTS.length)].id;
+        if (s === p) s = EFFECTS[(EFFECTS.findIndex(e => e.id === p) + 1) % EFFECTS.length].id;
+        settings = {
+          ...settings,
+          primaryEffect: p,
+          secondaryEffect: s,
+          primaryMix: rand(0.72, 1),
+          secondaryMix: rand(0.28, 0.86),
+          intensity: rand(0.48, 1),
+          audioSensitivity: rand(0.55, 1.45),
+          glow: rand(0.42, 1),
+          texture: rand(0.22, 1),
+          bitrate: rand(0.20, 0.94),
+          trail: rand(0.32, 0.92),
+          edgeBoost: rand(0.28, 1),
+          colorDrift: rand(0.12, 0.88),
+          feedback: rand(0.05, 0.65),
+          zoom: rand(0, 0.58),
+          cameraAlpha: rand(0, 0.18)
+        };
+        updateControlsFromSettings();
+        showToast("New visual stack generated.");
+      }
+
+      function setupControls() {
+        populateEffects();
+        updateControlsFromSettings();
+
+        function rememberRangeBefore(el) {
+          if (el.type === "range" && !el.dataset.beforeSettings) {
+            el.dataset.beforeSettings = JSON.stringify(settings);
+          }
+        }
+
+        function finalizeRange(el) {
+          if (el.type !== "range") return;
+          const before = el.dataset.beforeSettings;
+          if (before && before !== JSON.stringify(settings) && !isApplyingHistory) {
+            undoStack.push(JSON.parse(before));
+            undoStack = undoStack.slice(-80);
+            redoStack.length = 0;
+          }
+          delete el.dataset.beforeSettings;
+        }
+
+        document.querySelectorAll("[data-setting]").forEach(el => {
+          el.addEventListener("focus", () => {
+            if (el.type === "range") { lastRange = el; rememberRangeBefore(el); }
+          });
+          el.addEventListener("pointerdown", () => {
+            if (el.type === "range") { lastRange = el; rememberRangeBefore(el); }
+          });
+          el.addEventListener("change", () => {
+            if (el.type === "range") finalizeRange(el);
+            else applySetting(el.dataset.setting, el.value);
+          });
+          el.addEventListener("input", () => {
+            if (el.type === "range") {
+              rememberRangeBefore(el);
+              settings[el.dataset.setting] = Number(el.value);
+              const readout = document.getElementById(`${el.id}Val`);
+              if (readout) readout.textContent = formatValue(el.dataset.setting, Number(el.value));
+            }
+          });
+          el.addEventListener("blur", () => finalizeRange(el));
+        });
+
+        document.querySelectorAll(".panelTab").forEach(tab => {
+          tab.addEventListener("click", () => showPanel(tab.dataset.panel));
+        });
+
+        document.getElementById("collapseButton").addEventListener("click", toggleControls);
+        document.getElementById("randomizeButton").addEventListener("click", randomizeSettings);
+        document.getElementById("recordButton").addEventListener("click", toggleRecording);
+        document.getElementById("snapshotButton").addEventListener("click", saveSnapshot);
+        document.getElementById("copyPresetButton").addEventListener("click", copyPreset);
+        document.getElementById("resetButton").addEventListener("click", () => {
+          applyFullSettings(defaultSettings);
+          showToast("Settings reset.");
+        });
+        document.getElementById("restartMediaButton").addEventListener("click", () => startRealMedia(true));
+        document.getElementById("pauseButton").addEventListener("click", togglePause);
+        document.getElementById("homeButton").addEventListener("click", showHome);
+        document.getElementById("enterButton").addEventListener("click", launchLive);
+        document.getElementById("demoButton").addEventListener("click", launchDemo);
+      }
+
+      function showPanel(panelId) {
+        controlDock.classList.remove("collapsed");
+        document.querySelectorAll(".panelTab").forEach(tab => tab.classList.toggle("active", tab.dataset.panel === panelId));
+        document.querySelectorAll(".panelPage").forEach(panel => panel.classList.toggle("active", panel.id === panelId));
+      }
+
+      function toggleControls() {
+        controlDock.classList.toggle("collapsed");
+        document.getElementById("collapseButton").textContent = controlDock.classList.contains("collapsed") ? "Show" : "Hide";
+      }
+
+      function togglePause() {
+        isPaused = !isPaused;
+        document.getElementById("pauseButton").textContent = isPaused ? "Resume" : "Pause";
+        showToast(isPaused ? "Visual engine paused." : "Visual engine running.");
+      }
+
+      function showHome() {
+        homeScreen.classList.remove("hidden");
+        controlDock.classList.add("hidden");
+        topBar.classList.add("hidden");
+        cornerHint.classList.add("hidden");
+        cheatSheet.classList.add("hidden");
+      }
+
+      function showVisualizer() {
+        homeScreen.classList.add("hidden");
+        controlDock.classList.remove("hidden");
+        controlDock.classList.remove("collapsed");
+        topBar.classList.remove("hidden");
+        cornerHint.classList.remove("hidden");
+      }
+
+      function launchLive() {
+        playLoader(() => startRealMedia(false));
+      }
+
+      function launchDemo() {
+        playLoader(() => startDemo());
+      }
+
+      async function startRealMedia(restart = false) {
+        demoMode = false;
+        if (restart) stopMedia();
+        try {
+          setStatus("Requesting camera and microphone…");
+          mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: "environment" },
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              frameRate: { ideal: 30, max: 60 }
+            },
+            audio: {
+              echoCancellation: false,
+              noiseSuppression: false,
+              autoGainControl: false
+            }
+          });
+          video.srcObject = mediaStream;
+          await video.play();
+          await setupAudio(mediaStream);
+          showVisualizer();
+          startEngine();
+          setStatus("Live camera + microphone running. Press <kbd>R</kbd> to record, <kbd>K</kbd> for keys.");
+          showToast("MARZview is live.");
+        } catch (err) {
+          console.error(err);
+          showToast("Camera/mic permission did not start. Opening demo visualizer instead.");
+          startDemo();
+        }
+      }
+
+      function stopMedia() {
+        if (mediaStream) {
+          mediaStream.getTracks().forEach(track => track.stop());
+          mediaStream = null;
+        }
+        if (audioContext) {
+          audioContext.close().catch(() => {});
+          audioContext = null;
+        }
+        analyser = null;
+        freqData = null;
+        timeData = null;
+        video.srcObject = null;
+      }
+
+      async function setupAudio(stream) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioContext.state === "suspended") await audioContext.resume();
+        analyser = audioContext.createAnalyser();
+        analyser.fftSize = 1024;
+        analyser.smoothingTimeConstant = 0.78;
+        const source = audioContext.createMediaStreamSource(stream);
+        source.connect(analyser);
+        freqData = new Uint8Array(analyser.frequencyBinCount);
+        timeData = new Uint8Array(analyser.fftSize);
+      }
+
+      function startDemo() {
+        demoMode = true;
+        showVisualizer();
+        startEngine();
+        setStatus("Demo visualizer running without camera permission. Press <kbd>K</kbd> for keys.");
+        showToast("Demo visualizer opened.");
+      }
+
+      function startEngine() {
+        if (isRunning) return;
+        isRunning = true;
+        isPaused = false;
+        startTime = performance.now();
+        lastFrameTime = 0;
+        requestAnimationFrame(drawFrame);
+      }
+
+      function updateAudio(now) {
+        if (analyser && freqData && timeData) {
+          analyser.getByteFrequencyData(freqData);
+          analyser.getByteTimeDomainData(timeData);
+          let rms = 0;
+          for (let i = 0; i < timeData.length; i++) {
+            const v = (timeData[i] - 128) / 128;
+            rms += v * v;
+          }
+          rms = Math.sqrt(rms / timeData.length);
+          const len = freqData.length;
+          const avgBand = (start, end) => {
+            let sum = 0, count = 0;
+            const a = Math.max(0, Math.floor(start * len));
+            const b = Math.min(len, Math.floor(end * len));
+            for (let i = a; i < b; i++) { sum += freqData[i]; count++; }
+            return count ? sum / (count * 255) : 0;
+          };
+          audioState.volume = clamp(rms * 3.6 * settings.audioSensitivity);
+          audioState.bass = clamp(avgBand(0.00, 0.12) * 1.55 * settings.audioSensitivity);
+          audioState.mid = clamp(avgBand(0.12, 0.48) * 1.35 * settings.audioSensitivity);
+          audioState.treble = clamp(avgBand(0.48, 1.0) * 1.45 * settings.audioSensitivity);
+        } else {
+          const t = nowSeconds(now);
+          audioState.volume = clamp(0.44 + Math.sin(t * 2.2) * 0.18 + Math.sin(t * 7.1) * 0.06);
+          audioState.bass = clamp(0.5 + Math.sin(t * 1.6) * 0.28);
+          audioState.mid = clamp(0.38 + Math.sin(t * 3.3 + 1) * 0.24);
+          audioState.treble = clamp(0.28 + Math.sin(t * 8.0 + 2) * 0.18);
+        }
+        audioState.smoothed = lerp(audioState.smoothed, audioState.volume, 0.12);
+        volumeMeter.style.width = `${Math.round(audioState.volume * 100)}%`;
+        bassMeter.style.width = `${Math.round(audioState.bass * 100)}%`;
+        motionMeter.style.width = `${Math.round(audioState.motion * 100)}%`;
+      }
+
+      function prepareSourceFrame(now) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const scale = Math.round(lerp(20, 5, settings.bitrate));
+        const sw = Math.max(96, Math.floor(w / scale));
+        const sh = Math.max(54, Math.floor(h / scale));
+        if (sourceCanvas.width !== sw || sourceCanvas.height !== sh) {
+          sourceCanvas.width = sw;
+          sourceCanvas.height = sh;
+          scratchCanvas.width = sw;
+          scratchCanvas.height = sh;
+          previousData = null;
+        }
+
+        sourceCtx.save();
+        sourceCtx.clearRect(0, 0, sw, sh);
+        if (!demoMode && video.readyState >= 2 && video.videoWidth) {
+          const vw = video.videoWidth;
+          const vh = video.videoHeight;
+          const videoRatio = vw / vh;
+          const canvasRatio = sw / sh;
+          let sx = 0, sy = 0, sWidth = vw, sHeight = vh;
+          if (videoRatio > canvasRatio) {
+            sWidth = vh * canvasRatio;
+            sx = (vw - sWidth) / 2;
+          } else {
+            sHeight = vw / canvasRatio;
+            sy = (vh - sHeight) / 2;
+          }
+          sourceCtx.translate(sw, 0);
+          sourceCtx.scale(-1, 1);
+          sourceCtx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, sw, sh);
+        } else {
+          drawDemoSource(sourceCtx, sw, sh, now);
+        }
+        sourceCtx.restore();
+
+        const image = sourceCtx.getImageData(0, 0, sw, sh);
+        let motion = 0;
+        if (previousData && previousData.length === image.data.length) {
+          const step = 16;
+          let diff = 0, count = 0;
+          for (let i = 0; i < image.data.length; i += step * 4) {
+            diff += Math.abs(luminanceAt(image.data, i) - luminanceAt(previousData, i));
+            count++;
+          }
+          motion = clamp((diff / Math.max(1, count)) / 52);
+        }
+        audioState.motion = lerp(audioState.motion, motion, 0.22);
+        previousData = new Uint8ClampedArray(image.data);
+        return { image, w: sw, h: sh, cw: w, ch: h, time: nowSeconds(now) };
+      }
+
+      function drawDemoSource(c, w, h, now) {
+        const t = nowSeconds(now);
+        c.fillStyle = "#050707";
+        c.fillRect(0, 0, w, h);
+        const grad = c.createRadialGradient(w * 0.5, h * 0.5, 2, w * 0.5, h * 0.5, Math.max(w, h) * 0.68);
+        grad.addColorStop(0, `hsla(${175 + Math.sin(t) * 24}, 100%, 58%, 0.62)`);
+        grad.addColorStop(0.48, `hsla(${210 + Math.cos(t * 0.7) * 34}, 90%, 40%, 0.26)`);
+        grad.addColorStop(1, "rgba(0,0,0,0.96)");
+        c.fillStyle = grad;
+        c.fillRect(0, 0, w, h);
+        for (let i = 0; i < 7; i++) {
+          const x = w * (0.5 + Math.sin(t * (0.55 + i * 0.07) + i) * (0.2 + i * 0.012));
+          const y = h * (0.5 + Math.cos(t * (0.42 + i * 0.06) + i * 2) * (0.18 + i * 0.015));
+          c.beginPath();
+          c.fillStyle = `hsla(${(165 + i * 34 + t * 32) % 360}, 100%, ${55 + i * 3}%, ${0.22 + i * 0.035})`;
+          c.arc(x, y, Math.min(w, h) * (0.08 + i * 0.014), 0, Math.PI * 2);
+          c.fill();
+        }
+        c.strokeStyle = "rgba(255,255,255,0.12)";
+        c.lineWidth = 1;
+        for (let x = 0; x < w; x += Math.max(5, Math.floor(w / 24))) {
+          c.beginPath();
+          c.moveTo(x + Math.sin(t + x) * 3, 0);
+          c.lineTo(x + Math.cos(t + x) * 7, h);
+          c.stroke();
+        }
+      }
+
+      function drawFrame(now) {
+        if (!isRunning) return;
+        requestAnimationFrame(drawFrame);
+        if (isPaused) return;
+        const minFrameMs = 1000 / Math.max(12, Number(settings.fps) || 30);
+        if (now - lastFrameTime < minFrameMs * 0.72) return;
+        lastFrameTime = now;
+        frameCount++;
+        updateAudio(now);
+        const frame = prepareSourceFrame(now);
+        drawBackgroundFade(frame);
+        drawCameraGhost(frame);
+        drawEffect(settings.primaryEffect, frame, settings.primaryMix);
+        drawEffect(settings.secondaryEffect, frame, settings.secondaryMix);
+        drawVignette(frame);
+      }
+
+      function drawBackgroundFade(frame) {
+        const fade = lerp(0.29, 0.045, settings.trail) * (1 - settings.feedback * 0.45);
+        ctx.globalCompositeOperation = "source-over";
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = `rgba(0, 2, 3, ${clamp(fade, 0.018, 0.38)})`;
+        ctx.fillRect(0, 0, frame.cw, frame.ch);
+
+        if (settings.feedback > 0.02) {
+          const pulse = audioState.bass * settings.zoom * 0.018 + settings.feedback * 0.008;
+          const dx = frame.cw * pulse;
+          const dy = frame.ch * pulse;
+          ctx.save();
+          ctx.globalAlpha = settings.feedback * 0.22;
+          ctx.filter = `blur(${Math.round(settings.feedback * 5)}px) saturate(${1 + settings.feedback})`;
+          ctx.drawImage(canvas, dx, dy, frame.cw - dx * 2, frame.ch - dy * 2, 0, 0, frame.cw, frame.ch);
+          ctx.restore();
+        }
+      }
+
+      function drawCameraGhost(frame) {
+        if (settings.cameraAlpha <= 0) return;
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+        ctx.globalAlpha = settings.cameraAlpha;
+        ctx.filter = `saturate(${1.2 + settings.colorDrift}) contrast(${1.05 + settings.edgeBoost * 0.25})`;
+        ctx.drawImage(sourceCanvas, 0, 0, frame.cw, frame.ch);
+        ctx.restore();
+      }
+
+      function drawEffect(id, frame, mix) {
+        if (mix <= 0.01) return;
+        const fn = effectFunctions[id] || effectFunctions.tealBits;
+        ctx.save();
+        fn(frame, clamp(mix));
+        ctx.restore();
+      }
+
+      const effectFunctions = {
+        tealBits: drawTealBits,
+        edgeTrails: drawEdgeTrails,
+        auroraWash: drawAuroraWash,
+        prismGhost: drawPrismGhost,
+        chromaticVapor: drawChromaticVapor,
+        plasmaScan: drawPlasmaScan,
+        constellation: drawConstellation,
+        gridMelt: drawGridMelt,
+        solarDream: drawSolarDream,
+        echoGlass: drawEchoGlass
+      };
+
+      function drawTealBits(frame, mix) {
+        const { data } = frame.image;
+        const step = Math.max(2, Math.round(lerp(8, 2, settings.texture)));
+        const cellW = frame.cw / frame.w;
+        const cellH = frame.ch / frame.h;
+        const pulse = 0.75 + audioState.volume * 1.2 + audioState.treble * 0.55;
+        ctx.globalCompositeOperation = "lighter";
+        ctx.shadowBlur = 6 + settings.glow * 28 * pulse;
+        for (let y = 0; y < frame.h; y += step) {
+          for (let x = 0; x < frame.w; x += step) {
+            const i = (y * frame.w + x) * 4;
+            const l = luminanceAt(data, i) / 255;
+            const colorEnergy = (data[i + 1] + data[i + 2]) / 510;
+            const threshold = 0.14 + (1 - settings.intensity) * 0.32;
+            if (l * colorEnergy < threshold) continue;
+            const jitter = Math.sin(frame.time * 9 + x * 0.37 + y * 0.18) * settings.texture * 0.7;
+            const size = Math.max(1, (l * 4.2 + audioState.bass * 3.2) * mix * (0.8 + settings.bitrate));
+            const hue = 170 + settings.colorDrift * 55 + Math.sin(frame.time + x * 0.05) * 12;
+            const alpha = clamp((l * 0.84 + audioState.volume * 0.32) * mix * settings.intensity, 0, 0.94);
+            ctx.shadowColor = cssColor(hue, 100, 64, alpha);
+            ctx.fillStyle = cssColor(hue, 100, 62 + l * 22, alpha);
+            const px = x * cellW + jitter * cellW;
+            const py = y * cellH + Math.cos(frame.time * 7 + x) * settings.texture * cellH * 0.45;
+            if ((x + y + frameCount) % 5 === 0) ctx.fillRect(px, py, size, size);
+            else {
+              ctx.beginPath();
+              ctx.arc(px, py, size * 0.62, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        }
+      }
+
+      function drawEdgeTrails(frame, mix) {
+        const { data } = frame.image;
+        const step = Math.max(2, Math.round(lerp(7, 2, settings.bitrate)));
+        const cellW = frame.cw / frame.w;
+        const cellH = frame.ch / frame.h;
+        ctx.globalCompositeOperation = "lighter";
+        ctx.lineWidth = Math.max(1, settings.edgeBoost * 2.1 + audioState.mid * 1.5);
+        ctx.shadowBlur = 8 + settings.glow * 35;
+        const threshold = lerp(98, 28, settings.edgeBoost) * (1 - audioState.volume * 0.24);
+        for (let y = 1; y < frame.h - 1; y += step) {
+          for (let x = 1; x < frame.w - 1; x += step) {
+            const i = (y * frame.w + x) * 4;
+            const left = luminanceAt(data, (y * frame.w + x - 1) * 4);
+            const right = luminanceAt(data, (y * frame.w + x + 1) * 4);
+            const up = luminanceAt(data, ((y - 1) * frame.w + x) * 4);
+            const down = luminanceAt(data, ((y + 1) * frame.w + x) * 4);
+            const edge = Math.abs(left - right) + Math.abs(up - down);
+            if (edge < threshold) continue;
+            const motionBoost = previousData ? Math.abs(luminanceAt(data, i) - luminanceAt(previousData, i)) / 255 : 0;
+            const alpha = clamp((edge / 255) * mix * (0.45 + settings.intensity) + motionBoost * 0.75, 0, 1);
+            const hue = 176 + Math.sin(frame.time * 2 + x * 0.08) * 28 + settings.colorDrift * 80;
+            ctx.strokeStyle = cssColor(hue, 100, 66, alpha);
+            ctx.shadowColor = cssColor(hue, 100, 58, alpha);
+            const px = x * cellW;
+            const py = y * cellH;
+            const trail = (motionBoost * 18 + audioState.volume * 10 + settings.trail * 9) * mix;
+            ctx.beginPath();
+            ctx.moveTo(px - trail, py - trail * 0.25);
+            ctx.lineTo(px + cellW * step * 0.9 + trail, py + cellH * step * 0.25);
+            ctx.stroke();
+          }
+        }
+      }
+
+      function drawAuroraWash(frame, mix) {
+        const t = frame.time;
+        ctx.globalCompositeOperation = "screen";
+        ctx.globalAlpha = 0.22 * mix + audioState.volume * 0.18;
+        ctx.filter = `blur(${Math.round(4 + settings.glow * 18)}px) saturate(${1.4 + settings.colorDrift * 1.8}) hue-rotate(${Math.round(Math.sin(t * 0.38) * 45 * settings.colorDrift)}deg)`;
+        const zoom = 1 + settings.zoom * 0.12 + audioState.bass * 0.05;
+        const dw = frame.cw * zoom;
+        const dh = frame.ch * zoom;
+        ctx.drawImage(sourceCanvas, (frame.cw - dw) / 2, (frame.ch - dh) / 2, dw, dh);
+        ctx.filter = "none";
+        ctx.globalAlpha = mix * (0.14 + audioState.mid * 0.22);
+        for (let i = 0; i < 7; i++) {
+          const y = frame.ch * (0.15 + i * 0.12 + Math.sin(t * 0.65 + i) * 0.035);
+          const grad = ctx.createLinearGradient(0, y - 80, frame.cw, y + 80);
+          grad.addColorStop(0, `hsla(${150 + i * 18 + t * 16},100%,58%,0)`);
+          grad.addColorStop(0.5, `hsla(${175 + i * 22 + t * 18},100%,62%,${0.18 + audioState.volume * 0.24})`);
+          grad.addColorStop(1, `hsla(${250 + i * 14 + t * 20},100%,70%,0)`);
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.ellipse(frame.cw * 0.5, y, frame.cw * 0.62, 32 + settings.glow * 90, Math.sin(t + i) * 0.08, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      function drawPrismGhost(frame, mix) {
+        const t = frame.time;
+        ctx.globalCompositeOperation = "lighter";
+        const amp = (8 + settings.colorDrift * 36 + audioState.treble * 32) * mix;
+        const offsets = [
+          { x: -amp, y: Math.sin(t) * amp * 0.3, color: "rgba(255, 72, 210, 0.38)" },
+          { x: amp, y: Math.cos(t * 0.9) * amp * 0.3, color: "rgba(62, 255, 231, 0.42)" },
+          { x: Math.sin(t * 1.5) * amp, y: amp * 0.42, color: "rgba(255, 180, 58, 0.28)" }
+        ];
+        offsets.forEach(layer => {
+          ctx.save();
+          ctx.globalAlpha = mix * (0.35 + audioState.volume * 0.35);
+          ctx.filter = `contrast(${1.1 + settings.edgeBoost * 0.55}) saturate(${1.5 + settings.colorDrift * 1.6}) blur(${settings.texture * 1.2}px)`;
+          ctx.shadowColor = layer.color;
+          ctx.shadowBlur = 14 + settings.glow * 20;
+          ctx.drawImage(sourceCanvas, layer.x, layer.y, frame.cw, frame.ch);
+          ctx.globalCompositeOperation = "source-atop";
+          ctx.fillStyle = layer.color;
+          ctx.fillRect(0, 0, frame.cw, frame.ch);
+          ctx.restore();
+        });
+      }
+
+      function drawChromaticVapor(frame, mix) {
+        const { data } = frame.image;
+        const step = Math.max(3, Math.round(lerp(10, 3, settings.texture)));
+        const cellW = frame.cw / frame.w;
+        const cellH = frame.ch / frame.h;
+        const t = frame.time;
+        ctx.globalCompositeOperation = "lighter";
+        ctx.shadowBlur = 10 + settings.glow * 28;
+        for (let y = 0; y < frame.h; y += step) {
+          for (let x = 0; x < frame.w; x += step) {
+            const i = (y * frame.w + x) * 4;
+            const l = luminanceAt(data, i) / 255;
+            if (l < 0.22 - settings.intensity * 0.1) continue;
+            const flow = Math.sin(t * 1.4 + y * 0.09) * 26 * settings.colorDrift + audioState.mid * 26;
+            const rise = Math.cos(t * 1.8 + x * 0.05) * 13 * settings.texture - audioState.bass * 20;
+            const hue = (data[i] * 0.26 + data[i + 1] * 0.52 + data[i + 2] * 0.16 + t * 42 + settings.colorDrift * 120) % 360;
+            const alpha = clamp((l * 0.42 + audioState.volume * 0.16) * mix, 0, 0.72);
+            ctx.fillStyle = cssColor(hue, 100, 66, alpha);
+            ctx.shadowColor = cssColor(hue, 100, 58, alpha);
+            const px = x * cellW + flow;
+            const py = y * cellH + rise;
+            const w = cellW * step * (0.72 + l * 1.8 + audioState.treble);
+            const h = cellH * Math.max(1, step * 0.28) * (0.6 + settings.glow);
+            ctx.beginPath();
+            ctx.ellipse(px, py, w, h, Math.sin(t + x) * 0.4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      function drawPlasmaScan(frame, mix) {
+        const t = frame.time;
+        ctx.globalCompositeOperation = "screen";
+        ctx.globalAlpha = 0.42 * mix + audioState.volume * 0.2;
+        ctx.filter = `saturate(${1.6 + settings.colorDrift * 2}) contrast(${1.05 + settings.edgeBoost})`;
+        const strips = Math.max(18, Math.floor(lerp(36, 120, settings.bitrate)));
+        const stripH = frame.ch / strips;
+        for (let s = 0; s < strips; s++) {
+          const sy = (s / strips) * sourceCanvas.height;
+          const sh = sourceCanvas.height / strips + 1;
+          const y = s * stripH;
+          const offset = Math.sin(t * 3 + s * 0.44) * (settings.texture * 10 + audioState.bass * 24) * mix;
+          ctx.drawImage(sourceCanvas, 0, sy, sourceCanvas.width, sh, offset, y, frame.cw, stripH + 1);
+        }
+        ctx.filter = "none";
+        ctx.globalCompositeOperation = "lighter";
+        ctx.globalAlpha = mix * (0.18 + audioState.treble * 0.2);
+        for (let y = 0; y < frame.ch; y += Math.max(3, Math.round(lerp(12, 4, settings.texture)))) {
+          const hue = (165 + y * 0.11 + t * 48 + settings.colorDrift * 90) % 360;
+          ctx.fillStyle = cssColor(hue, 100, 58, 0.16 + audioState.volume * 0.18);
+          ctx.fillRect(0, y, frame.cw, 1 + settings.glow * 2);
+        }
+      }
+
+      function drawConstellation(frame, mix) {
+        const { data } = frame.image;
+        const step = Math.max(3, Math.round(lerp(12, 4, settings.texture)));
+        const cellW = frame.cw / frame.w;
+        const cellH = frame.ch / frame.h;
+        const points = [];
+        for (let y = 0; y < frame.h; y += step) {
+          for (let x = 0; x < frame.w; x += step) {
+            const i = (y * frame.w + x) * 4;
+            const l = luminanceAt(data, i) / 255;
+            if (l > 0.42 - settings.intensity * 0.15 && points.length < 480) {
+              points.push({
+                x: x * cellW + Math.sin(frame.time * 3 + x) * settings.texture * 2,
+                y: y * cellH + Math.cos(frame.time * 2 + y) * settings.texture * 2,
+                l,
+                hue: (170 + data[i] * 0.2 + frame.time * 20 + settings.colorDrift * 100) % 360
+              });
+            }
+          }
+        }
+        ctx.globalCompositeOperation = "lighter";
+        ctx.shadowBlur = 7 + settings.glow * 20;
+        const connectDist = (48 + settings.texture * 82 + audioState.bass * 70) * mix;
+        ctx.lineWidth = 0.6 + settings.edgeBoost * 1.4;
+        for (let i = 0; i < points.length; i++) {
+          const a = points[i];
+          for (let j = i + 1; j < Math.min(points.length, i + 16); j++) {
+            const b = points[j];
+            const dx = a.x - b.x, dy = a.y - b.y;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (d < connectDist) {
+              const alpha = (1 - d / connectDist) * 0.18 * mix * (0.6 + audioState.mid);
+              ctx.strokeStyle = cssColor((a.hue + b.hue) * 0.5, 100, 68, alpha);
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
+          }
+        }
+        points.forEach(p => {
+          const size = (1 + p.l * 3.6 + audioState.treble * 2.8) * mix;
+          ctx.fillStyle = cssColor(p.hue, 100, 70, clamp((p.l * 0.78 + audioState.volume * 0.24) * mix, 0, 0.9));
+          ctx.shadowColor = ctx.fillStyle;
+          ctx.fillRect(p.x - size / 2, p.y - size / 2, size, size);
+        });
+      }
+
+      function drawGridMelt(frame, mix) {
+        const { data } = frame.image;
+        const step = Math.max(3, Math.round(lerp(12, 3, settings.bitrate)));
+        const cellW = frame.cw / frame.w;
+        const cellH = frame.ch / frame.h;
+        const t = frame.time;
+        ctx.globalCompositeOperation = "lighter";
+        ctx.shadowBlur = 5 + settings.glow * 18;
+        for (let y = 0; y < frame.h; y += step) {
+          for (let x = 0; x < frame.w; x += step) {
+            const i = (y * frame.w + x) * 4;
+            const l = luminanceAt(data, i) / 255;
+            if (l < 0.12) continue;
+            const wave = Math.sin(t * 3.2 + x * 0.16 + y * 0.09) * (audioState.bass * 24 + settings.texture * 12);
+            const px = x * cellW + wave;
+            const py = y * cellH + Math.cos(t * 2 + x * 0.1) * settings.texture * 6;
+            const hue = (155 + l * 90 + settings.colorDrift * 120 + t * 18) % 360;
+            const alpha = clamp((0.12 + l * 0.5 + audioState.volume * 0.25) * mix, 0, 0.82);
+            ctx.fillStyle = cssColor(hue, 100, 58, alpha);
+            ctx.shadowColor = cssColor(hue, 100, 52, alpha);
+            const sizeX = cellW * step * (0.62 + audioState.mid * 0.9);
+            const sizeY = cellH * step * (0.36 + l * 0.9 + audioState.bass * 0.8);
+            ctx.strokeStyle = cssColor(hue, 100, 62, alpha * 0.72);
+            ctx.strokeRect(px, py, sizeX, sizeY);
+            if (l > 0.55) ctx.fillRect(px + sizeX * 0.25, py + sizeY * 0.25, sizeX * 0.5, sizeY * 0.5);
+          }
+        }
+      }
+
+      function drawSolarDream(frame, mix) {
+        const { data } = frame.image;
+        const step = Math.max(2, Math.round(lerp(7, 2, settings.bitrate)));
+        const cellW = frame.cw / frame.w;
+        const cellH = frame.ch / frame.h;
+        ctx.globalCompositeOperation = "screen";
+        ctx.shadowBlur = 5 + settings.glow * 16;
+        for (let y = 0; y < frame.h; y += step) {
+          for (let x = 0; x < frame.w; x += step) {
+            const i = (y * frame.w + x) * 4;
+            const l = luminanceAt(data, i) / 255;
+            const band = Math.floor(l * 5 + audioState.volume * 2);
+            const hues = [185, 155, 48, 315, 25, 205];
+            const hue = (hues[clamp(band, 0, hues.length - 1)] + settings.colorDrift * 90 + frame.time * 7) % 360;
+            const alpha = clamp((0.08 + l * 0.52) * mix * (0.7 + settings.intensity), 0, 0.86);
+            ctx.fillStyle = cssColor(hue, 100, 54 + l * 22, alpha);
+            ctx.shadowColor = cssColor(hue, 100, 55, alpha);
+            const inflate = 1 + audioState.bass * 0.7;
+            ctx.fillRect(x * cellW, y * cellH, cellW * step * inflate + 0.5, cellH * step * inflate + 0.5);
+          }
+        }
+      }
+
+      function drawEchoGlass(frame, mix) {
+        const t = frame.time;
+        ctx.globalCompositeOperation = "lighter";
+        ctx.filter = `blur(${settings.feedback * 2.5}px) saturate(${1.4 + settings.colorDrift * 1.4}) contrast(${1.1 + settings.edgeBoost * 0.42})`;
+        for (let i = 0; i < 5; i++) {
+          const scale = 1 + i * (0.018 + settings.zoom * 0.025) + audioState.bass * 0.035;
+          const dw = frame.cw * scale;
+          const dh = frame.ch * scale;
+          const wobbleX = Math.sin(t * (1.2 + i * 0.2) + i) * (settings.texture * 18 + audioState.mid * 12);
+          const wobbleY = Math.cos(t * (1.1 + i * 0.16) + i) * (settings.texture * 10 + audioState.treble * 10);
+          ctx.globalAlpha = mix * (0.16 + i * 0.045 + audioState.volume * 0.08);
+          ctx.drawImage(sourceCanvas, (frame.cw - dw) / 2 + wobbleX, (frame.ch - dh) / 2 + wobbleY, dw, dh);
+        }
+        ctx.filter = "none";
+      }
+
+      function drawVignette(frame) {
+        ctx.save();
+        ctx.globalCompositeOperation = "source-over";
+        const grad = ctx.createRadialGradient(frame.cw / 2, frame.ch / 2, frame.ch * 0.12, frame.cw / 2, frame.ch / 2, frame.cw * 0.68);
+        grad.addColorStop(0, "rgba(0,0,0,0)");
+        grad.addColorStop(0.72, "rgba(0,0,0,0.08)");
+        grad.addColorStop(1, "rgba(0,0,0,0.62)");
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, frame.cw, frame.ch);
+        ctx.restore();
+      }
+
+      function saveSnapshot() {
+        const a = document.createElement("a");
+        a.download = `MARZview-snapshot-${Date.now()}.png`;
+        a.href = canvas.toDataURL("image/png");
+        a.click();
+        showToast("PNG snapshot saved.");
+      }
+
+      function bestRecordingMime() {
+        const candidates = [
+          "video/mp4;codecs=h264,aac",
+          "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+          "video/mp4",
+          "video/webm;codecs=vp9,opus",
+          "video/webm;codecs=vp8,opus",
+          "video/webm"
+        ];
+        if (!window.MediaRecorder) return "";
+        return candidates.find(type => MediaRecorder.isTypeSupported(type)) || "";
+      }
+
+      async function toggleRecording() {
+        if (mediaRecorder && mediaRecorder.state === "recording") {
+          mediaRecorder.stop();
+          return;
+        }
+        if (!window.MediaRecorder || !canvas.captureStream) {
+          showToast("This browser cannot record canvas video with MediaRecorder.");
+          return;
+        }
+        const fps = Number(settings.fps) || 30;
+        const canvasStream = canvas.captureStream(fps);
+        const tracks = [...canvasStream.getVideoTracks()];
+        if (mediaStream) tracks.push(...mediaStream.getAudioTracks());
+        const combined = new MediaStream(tracks);
+        recorderMime = bestRecordingMime();
+        if (!recorderMime) {
+          showToast("No supported recording format found in this browser.");
+          return;
+        }
+        recordedChunks = [];
+        try {
+          mediaRecorder = new MediaRecorder(combined, {
+            mimeType: recorderMime,
+            videoBitsPerSecond: Math.round(Number(settings.exportBitrate) * 1000000),
+            audioBitsPerSecond: 192000
+          });
+        } catch (err) {
+          console.error(err);
+          mediaRecorder = new MediaRecorder(combined);
+          recorderMime = mediaRecorder.mimeType || "video/webm";
+        }
+        mediaRecorder.ondataavailable = event => {
+          if (event.data && event.data.size > 0) recordedChunks.push(event.data);
+        };
+        mediaRecorder.onstop = () => saveRecording();
+        mediaRecorder.start(1000);
+        document.getElementById("recordButton").innerHTML = "Stop Recording";
+        document.getElementById("recordingStatus").innerHTML = `<span class="recDot"></span>Recording ${recorderMime.includes("mp4") ? "MP4" : "WebM fallback"} at ${settings.exportBitrate.toFixed(1)} Mbps target.`;
+        setStatus(`<span class="recDot"></span>Recording. Press <kbd>R</kbd> to stop.`);
+      }
+
+      function saveRecording() {
+        const isMp4 = recorderMime.includes("mp4");
+        const ext = isMp4 ? "mp4" : "webm";
+        const blob = new Blob(recordedChunks, { type: recorderMime || (isMp4 ? "video/mp4" : "video/webm") });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `MARZview-recording-${Date.now()}.${ext}`;
+        a.click();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+        document.getElementById("recordButton").textContent = "Start Recording";
+        document.getElementById("recordingStatus").textContent = isMp4
+          ? "Recording saved as MP4."
+          : "Recording saved as WebM because this browser did not expose MP4 recording support.";
+        setStatus("Recording saved. Press <kbd>R</kbd> to record again.");
+        showToast(isMp4 ? "MP4 recording saved." : "WebM recording saved. MP4 was not available in this browser.");
+      }
+
+      async function copyPreset() {
+        const preset = JSON.stringify(settings, null, 2);
+        try {
+          await navigator.clipboard.writeText(preset);
+          showToast("Preset copied to clipboard.");
+        } catch {
+          showToast("Clipboard copy blocked. Select the preset from developer console if needed.");
+          console.log("MARZview preset", preset);
+        }
+      }
+
+      async function pastePreset() {
+        try {
+          const text = await navigator.clipboard.readText();
+          const preset = JSON.parse(text);
+          applyFullSettings(preset);
+          showToast("Preset pasted.");
+        } catch {
+          showToast("Clipboard did not contain a MARZview preset.");
+        }
+      }
+
+      function selectEffectByNumber(number, secondary) {
+        const index = number === 0 ? 9 : number - 1;
+        const effect = EFFECTS[index];
+        if (!effect) return;
+        applySetting(secondary ? "secondaryEffect" : "primaryEffect", effect.id);
+        showToast(`${secondary ? "Secondary" : "Primary"}: ${effect.name}`);
+      }
+
+      function adjustLastRange(delta) {
+        const range = lastRange || document.querySelector(".panelPage.active input[type='range']");
+        if (!range) return;
+        const step = Number(range.step || 0.01);
+        const min = Number(range.min || 0);
+        const max = Number(range.max || 1);
+        const next = clamp(Number(range.value) + delta * step, min, max);
+        range.value = String(next);
+        range.focus({ preventScroll: true });
+        applySetting(range.dataset.setting, next);
+      }
+
+      function setupKeyboard() {
+        document.addEventListener("keydown", event => {
+          const tag = (event.target && event.target.tagName || "").toLowerCase();
+          const isTyping = ["input", "textarea", "select"].includes(tag) && event.target.type !== "range";
+          if (isTyping && !event.ctrlKey && !event.metaKey) return;
+
+          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "c") {
+            event.preventDefault();
+            copyPreset();
+            return;
+          }
+          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "v") {
+            event.preventDefault();
+            pastePreset();
+            return;
+          }
+          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
+            event.preventDefault();
+            if (event.shiftKey) redo(); else undo();
+            return;
+          }
+          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "y") {
+            event.preventDefault();
+            redo();
+            return;
+          }
+
+          const key = event.key.toLowerCase();
+          const number = /^\d$/.test(event.key) ? Number(event.key) : null;
+          if (number !== null) {
+            event.preventDefault();
+            selectEffectByNumber(number, event.shiftKey);
+            return;
+          }
+          if (["arrowup", "arrowright", "arrowdown", "arrowleft"].includes(key)) {
+            event.preventDefault();
+            const positive = key === "arrowup" || key === "arrowright";
+            adjustLastRange((positive ? 1 : -1) * (event.shiftKey ? 10 : 1));
+            return;
+          }
+
+          switch (key) {
+            case "k":
+              cheatSheet.classList.toggle("hidden");
+              event.preventDefault();
+              break;
+            case "e": showPanel("effectsPanel"); event.preventDefault(); break;
+            case "v": showPanel("visualPanel"); event.preventDefault(); break;
+            case "x": showPanel("exportPanel"); event.preventDefault(); break;
+            case "c": showPanel("cameraPanel"); event.preventDefault(); break;
+            case "r": toggleRecording(); event.preventDefault(); break;
+            case "s": saveSnapshot(); event.preventDefault(); break;
+            case "b": randomizeSettings(); event.preventDefault(); break;
+            case "p": toggleControls(); event.preventDefault(); break;
+            case " ": togglePause(); event.preventDefault(); break;
+            case "escape": cheatSheet.classList.add("hidden"); event.preventDefault(); break;
+          }
+        });
+      }
+
+      function generateLoaderTargets() {
+        const w = loaderCanvas.width;
+        const h = loaderCanvas.height;
+        const targets = [];
+        const cx = w * 0.5;
+        const cy = h * 0.52;
+        const unit = Math.min(w, h) * 0.026;
+        const addRect = (x, y, rw, rh, color, every = 1) => {
+          for (let yy = 0; yy < rh; yy++) {
+            for (let xx = 0; xx < rw; xx++) {
+              if ((xx + yy) % every === 0) {
+                targets.push({ x: x + xx * unit, y: y + yy * unit, color });
+              }
+            }
+          }
+        };
+        const green = "rgba(87,255,138,0.92)";
+        const teal = "rgba(87,255,231,0.88)";
+        const orange = "rgba(255,138,40,0.88)";
+        const cactusX = cx - unit * 3;
+        const cactusY = cy - unit * 9;
+        addRect(cactusX + unit * 2, cactusY, 4, 16, green, 1);
+        addRect(cactusX + unit * 0, cactusY + unit * 5, 3, 3, teal, 1);
+        addRect(cactusX - unit * 1, cactusY + unit * 7, 3, 6, teal, 1);
+        addRect(cactusX + unit * 6, cactusY + unit * 4, 3, 3, green, 1);
+        addRect(cactusX + unit * 8, cactusY + unit * 6, 3, 6, green, 1);
+        addRect(cactusX + unit * 1, cactusY + unit * 16, 6, 2, green, 1);
+
+        for (let y = 0; y < 9; y++) {
+          const width = 22 - y * 2;
+          const x0 = cx - unit * 23 + y * unit;
+          const y0 = cy + unit * 9 - y * unit;
+          addRect(x0, y0, width, 1, orange, 1);
+        }
+        for (let y = 0; y < 7; y++) {
+          const width = 18 - y * 2;
+          const x0 = cx + unit * 6 + y * unit;
+          const y0 = cy + unit * 9 - y * unit;
+          addRect(x0, y0, width, 1, orange, 1);
+        }
+        return targets.map((target, index) => ({
+          ...target,
+          sx: rand(-w * 0.12, w * 1.12),
+          sy: rand(-h * 0.12, h * 1.12),
+          delay: (index % 37) / 37 * 0.38,
+          size: Math.max(3, unit * rand(0.32, 0.54)),
+          spin: rand(-Math.PI, Math.PI)
+        }));
+      }
+
+      function playLoader(done) {
+        loaderScreen.classList.remove("hidden");
+        resizeLoader();
+        const targets = generateLoaderTargets();
+        const duration = 2700;
+        const start = performance.now();
+        const text = document.getElementById("loaderText");
+
+        function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+        function loaderFrame(now) {
+          const elapsed = now - start;
+          const p = clamp(elapsed / duration);
+          loaderCtx.fillStyle = "rgba(2,6,6,0.26)";
+          loaderCtx.fillRect(0, 0, loaderCanvas.width, loaderCanvas.height);
+          loaderCtx.save();
+          loaderCtx.globalCompositeOperation = "lighter";
+          targets.forEach((particle, i) => {
+            const local = clamp((p - particle.delay) / (1 - particle.delay));
+            const e = easeOutCubic(local);
+            const wave = Math.sin(now * 0.004 + i * 0.77) * (1 - e) * 28;
+            const x = lerp(particle.sx, particle.x, e) + wave;
+            const y = lerp(particle.sy, particle.y, e) + Math.cos(now * 0.004 + i) * (1 - e) * 22;
+            const flash = 0.55 + Math.sin(now * 0.014 + i) * 0.25;
+            loaderCtx.fillStyle = particle.color.replace(/0\.\d+\)/, `${clamp(0.55 + flash * 0.45)})`);
+            loaderCtx.shadowColor = particle.color;
+            loaderCtx.shadowBlur = 8 + flash * 12;
+            loaderCtx.save();
+            loaderCtx.translate(x, y);
+            loaderCtx.rotate(particle.spin * (1 - e));
+            loaderCtx.fillRect(-particle.size / 2, -particle.size / 2, particle.size, particle.size);
+            loaderCtx.restore();
+          });
+          loaderCtx.restore();
+          const typedLength = Math.max(1, Math.floor(map(p, 0, 0.78, 1, "loading...".length)));
+          text.textContent = "loading...".slice(0, typedLength);
+          if (p < 1) requestAnimationFrame(loaderFrame);
+          else {
+            loaderScreen.classList.add("hidden");
+            text.textContent = "loading...";
+            if (typeof done === "function") done();
+          }
+        }
+        loaderCtx.fillStyle = "#020606";
+        loaderCtx.fillRect(0, 0, loaderCanvas.width, loaderCanvas.height);
+        requestAnimationFrame(loaderFrame);
+      }
+
+      function init() {
+        resizeCanvas();
+        resizeLoader();
+        setupControls();
+        setupKeyboard();
+        homeScreen.classList.remove("hidden");
+        loaderScreen.classList.add("hidden");
+        window.addEventListener("resize", () => {
+          resizeCanvas();
+          resizeLoader();
+        });
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
