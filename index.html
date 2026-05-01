@@ -47,6 +47,10 @@
     #appShell {
       position: fixed;
       inset: 0;
+      width: 100vw;
+      width: 100dvw;
+      height: 100vh;
+      height: 100dvh;
       overflow: hidden;
       background:
         radial-gradient(circle at 12% 18%, rgba(87, 255, 231, 0.12), transparent 26%),
@@ -80,7 +84,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: clamp(12px, 4vmin, 24px);
       overflow: hidden;
       background:
         radial-gradient(circle at 12% 80%, rgba(87, 255, 231, 0.11), transparent 30%),
@@ -128,8 +132,10 @@
 
     .homeCard {
       position: relative;
-      width: min(980px, 94vw);
-      min-height: min(640px, 86vh);
+      width: min(980px, calc(100vw - 24px));
+      width: min(980px, calc(100dvw - 24px));
+      min-height: min(640px, calc(100vh - 28px));
+      min-height: min(640px, calc(100dvh - 28px));
       border: 1px solid rgba(87, 255, 231, 0.24);
       border-radius: 28px;
       background:
@@ -165,18 +171,26 @@
 
     .pixelTitle {
       display: flex;
-      gap: clamp(4px, 0.9vw, 10px);
+      gap: clamp(2px, 0.72vw, 10px);
       align-items: flex-start;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       filter: drop-shadow(0 0 14px rgba(87, 255, 231, 0.7));
+      max-width: 100%;
+    }
+
+    #homePixelTitle {
+      justify-content: center;
+      transform-origin: center top;
+      width: 100%;
     }
 
     .pixelLetter {
       display: grid;
       grid-template-columns: repeat(5, var(--pxSize));
       grid-template-rows: repeat(7, var(--pxSize));
-      gap: max(1px, calc(var(--pxSize) * 0.18));
-      --pxSize: clamp(7px, 1.5vw, 17px);
+      gap: max(1px, calc(var(--pxSize) * 0.16));
+      --pxSize: clamp(4px, 1.22vw, 16px);
+      flex: 0 0 auto;
     }
 
     .pixelLetter.small {
@@ -224,32 +238,6 @@
       margin-top: 12px;
     }
 
-    .launchWrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin-top: clamp(24px, 6vh, 64px);
-      width: 100%;
-    }
-
-    .launchHint {
-      color: rgba(234, 255, 251, 0.58);
-      font-size: clamp(0.72rem, 1.6vw, 0.92rem);
-      text-align: center;
-      line-height: 1.45;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-
-    .enterButton {
-      min-width: min(280px, 72vw);
-      padding: 16px 32px;
-      font-size: clamp(1rem, 2vw, 1.2rem);
-      letter-spacing: 0.24em;
-    }
-
     .designer {
       position: absolute;
       right: clamp(18px, 4vw, 44px);
@@ -294,10 +282,83 @@
       font-size: 0.78rem;
     }
 
+    #masterHideButton {
+      position: fixed;
+      right: 12px;
+      top: calc(12px + var(--safe-top));
+      z-index: 90;
+      min-width: 76px;
+      min-height: 34px;
+      padding: 8px 11px;
+      border: 1px solid rgba(200, 200, 200, 0.34);
+      border-radius: 999px;
+      background: rgba(20, 24, 24, 0.68);
+      color: rgba(234, 255, 251, 0.82);
+      box-shadow: 0 0 14px rgba(87, 255, 231, 0.14);
+      cursor: pointer;
+      transition: all 160ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #appShell.uiHidden #topBar,
+    #appShell.uiHidden #controlDock,
+    #appShell.uiHidden #cheatSheet,
+    #appShell.uiHidden #cornerHint,
+    #appShell.uiHidden #toast {
+      display: none !important;
+    }
+
+    #appShell.uiHidden #masterHideButton {
+      width: 12px;
+      height: 12px;
+      min-width: 12px;
+      min-height: 12px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(128, 128, 128, 0.40);
+      color: transparent;
+      opacity: 1;
+      box-shadow: none;
+      overflow: hidden;
+    }
+
+    .nudgeGrid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .nudgeGrid .spacer {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .cheatGroup {
+      border-top: 1px solid rgba(87, 255, 231, 0.14);
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+
+    .cheatGroup:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+      margin-top: 0;
+    }
+
+    .cheatGroup h4 {
+      margin: 0 0 8px;
+      color: #dffff9;
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      font-size: 0.72rem;
+    }
+
     #topBar {
       position: fixed;
       left: 12px;
-      right: 12px;
+      right: 102px;
       top: calc(10px + var(--safe-top));
       z-index: 12;
       display: flex;
@@ -633,13 +694,25 @@
     }
 
     @media (max-width: 780px) {
-      .homeCard { min-height: 84vh; }
+      .homeCard { min-height: min(84vh, calc(100dvh - 24px)); padding: clamp(14px, 5vw, 28px); }
       .designer { right: 22px; bottom: 22px; }
-      .homeCopy { padding-bottom: 44px; }
+      .homeCopy { padding-bottom: 22px; font-size: clamp(0.82rem, 3.4vw, 1.02rem); }
       #controlDock { max-height: 64vh; }
       .panelTabs { grid-template-columns: repeat(2, 1fr); }
       .statusPill { display: none; }
       .brandBugText { display: none; }
+      #homePixelTitle { justify-content: center; }
+      #homePixelTitle { gap: 1px; }
+      #homePixelTitle .pixelLetter { --pxSize: clamp(4px, 1.4vw, 11px); gap: 1px; }
+      #masterHideButton { right: 10px; top: calc(10px + var(--safe-top)); }
+      #topBar { right: 44px; }
+    }
+
+    @media (max-width: 420px) {
+      #homePixelTitle { gap: 1px; }
+      #homePixelTitle .pixelLetter { --pxSize: clamp(3.2px, 1.55vw, 6.8px); gap: 1px; }
+      .homeCard { border-radius: 22px; }
+      .launchWrap { margin-top: 18px; }
     }
 
     @media (orientation: landscape) and (max-height: 520px) {
@@ -671,6 +744,7 @@
     </div>
 
     <div id="cornerHint" class="cornerHint hidden">Bluetooth keyboard ready<br/>K = cheat sheet • E/V/X/C = panels</div>
+    <button id="masterHideButton" class="hidden" aria-pressed="false" title="Hide all on-screen controls">Hide UI</button>
 
     <section id="homeScreen" class="screen" aria-label="Home screen">
       <div class="homeCard">
@@ -680,12 +754,10 @@
             <p class="homeCopy">
               Camera becomes luminous signal. Microphone becomes motion. Stack two neon synth visuals, bend their texture, trail, glow, bitrate, and color drift, then record the live canvas with audio.
             </p>
-            <div class="launchWrap">
-              <button id="enterButton" class="primaryButton enterButton">Enter</button>
-              <div class="homeActions">
-                <button id="demoButton" class="ghostButton">Open Demo Visualizer</button>
-              </div>
-              <p class="launchHint">Home screen loads first. The loading screen only appears when you launch into the app.</p>
+            <div class="homeActions">
+              <button id="startButton" class="primaryButton">Start Camera + Mic</button>
+              <button id="demoButton" class="ghostButton">Open Demo Visualizer</button>
+              <button id="loaderPreviewButton" class="ghostButton">Replay Loader</button>
             </div>
             <p class="tinyNote">For iPhone/iPad, start from a tap so Safari can unlock camera, mic, and audio analysis. MP4 export appears when the browser supports MediaRecorder MP4; otherwise the app records a WebM fallback.</p>
           </div>
@@ -694,7 +766,7 @@
       </div>
     </section>
 
-    <section id="loaderScreen" class="screen hidden" aria-label="Loading screen">
+    <section id="loaderScreen" class="screen" aria-label="Loading screen">
       <canvas id="loaderCanvas"></canvas>
       <div id="loaderText" class="loaderText">loading...</div>
     </section>
@@ -703,6 +775,7 @@
       <div class="dockHeader">
         <strong>Controls</strong>
         <div>
+          <button id="keyboardButton" class="miniButton" title="Show keyboard shortcuts">Keys</button>
           <button id="randomizeButton" class="miniButton" title="Randomize look">Dice</button>
           <button id="collapseButton" class="miniButton" title="Collapse controls">Hide</button>
         </div>
@@ -735,8 +808,8 @@
             <input id="intensity" type="range" min="0" max="1" step="0.01" data-setting="intensity" />
           </div>
           <div class="controlRow">
-            <div><label for="audioSensitivity">Audio response</label><small>How hard the microphone pushes the visuals.</small></div><span class="valueReadout" id="audioSensitivityVal"></span>
-            <input id="audioSensitivity" type="range" min="0" max="1.8" step="0.01" data-setting="audioSensitivity" />
+            <div><label for="audioSensitivity">Mic sensitivity</label><small>0% to 500% microphone gain into the visual engine.</small></div><span class="valueReadout" id="audioSensitivityVal"></span>
+            <input id="audioSensitivity" type="range" min="0" max="5" step="0.01" data-setting="audioSensitivity" />
           </div>
         </div>
 
@@ -806,6 +879,30 @@
             <div><label for="cameraAlpha">Camera ghost</label><small>Faint original video under the visuals.</small></div><span class="valueReadout" id="cameraAlphaVal"></span>
             <input id="cameraAlpha" type="range" min="0" max="0.6" step="0.01" data-setting="cameraAlpha" />
           </div>
+          <div class="controlRow">
+            <div><label for="cameraZoom">Camera zoom</label><small>True source zoom before the effects process the image.</small></div><span class="valueReadout" id="cameraZoomVal"></span>
+            <input id="cameraZoom" type="range" min="1" max="4" step="0.01" data-setting="cameraZoom" />
+          </div>
+          <div class="controlRow">
+            <div><label for="panX">Pan left / right</label><small>Move the zoomed camera frame horizontally.</small></div><span class="valueReadout" id="panXVal"></span>
+            <input id="panX" type="range" min="-1" max="1" step="0.01" data-setting="panX" />
+          </div>
+          <div class="controlRow">
+            <div><label for="panY">Pan up / down</label><small>Move the zoomed camera frame vertically.</small></div><span class="valueReadout" id="panYVal"></span>
+            <input id="panY" type="range" min="-1" max="1" step="0.01" data-setting="panY" />
+          </div>
+          <div class="sectionTitle">Frame nudges <span>Z + / Z - • arrows pan</span></div>
+          <div class="nudgeGrid">
+            <span class="spacer"></span>
+            <button class="miniButton" data-pan="up">Pan ↑</button>
+            <span class="spacer"></span>
+            <button class="miniButton" data-pan="left">Pan ←</button>
+            <button class="miniButton" data-zoom="out">Z−</button>
+            <button class="miniButton" data-pan="right">Pan →</button>
+            <span class="spacer"></span>
+            <button class="miniButton" data-pan="down">Pan ↓</button>
+            <button class="miniButton" data-zoom="in">Z+</button>
+          </div>
           <div class="meterWrap">
             <div><small>Volume</small><div class="meter"><span id="volumeMeter"></span></div></div>
             <div><small>Bass</small><div class="meter"><span id="bassMeter"></span></div></div>
@@ -818,21 +915,65 @@
 
     <aside id="cheatSheet" class="hidden" aria-label="Keyboard cheat sheet">
       <h3>Keyboard cheat sheet</h3>
-      <div class="keyGrid">
-        <div><kbd>K</kbd></div><div>Show / hide this cheat sheet.</div>
-        <div><kbd>E</kbd> <kbd>V</kbd> <kbd>X</kbd> <kbd>C</kbd></div><div>Open Effects, Visual, Export, or Camera panel.</div>
-        <div><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd></div><div>Adjust the focused or most recently touched slider. Hold Shift for larger jumps.</div>
-        <div><kbd>1</kbd>–<kbd>0</kbd></div><div>Change primary effect.</div>
-        <div><kbd>Shift</kbd> + <kbd>1</kbd>–<kbd>0</kbd></div><div>Change secondary effect.</div>
-        <div><kbd>R</kbd></div><div>Start / stop recording.</div>
-        <div><kbd>S</kbd></div><div>Save a PNG snapshot.</div>
-        <div><kbd>B</kbd></div><div>Randomize settings.</div>
-        <div><kbd>P</kbd></div><div>Show / hide the control dock.</div>
-        <div><kbd>Space</kbd></div><div>Pause / resume visual engine.</div>
-        <div><kbd>Ctrl</kbd> + <kbd>C</kbd></div><div>Copy the current preset JSON.</div>
-        <div><kbd>Ctrl</kbd> + <kbd>V</kbd></div><div>Paste a preset JSON from clipboard, if available.</div>
-        <div><kbd>Ctrl</kbd> + <kbd>Z</kbd></div><div>Undo setting change.</div>
-        <div><kbd>Ctrl</kbd> + <kbd>Y</kbd></div><div>Redo setting change.</div>
+
+      <div class="cheatGroup">
+        <h4>Panels + visibility</h4>
+        <div class="keyGrid">
+          <div><kbd>K</kbd></div><div>Show / hide this cheat sheet.</div>
+          <div><kbd>E</kbd> <kbd>V</kbd> <kbd>X</kbd> <kbd>C</kbd></div><div>Open Effects, Visual, Export, or Camera panel.</div>
+          <div><kbd>P</kbd></div><div>Show / hide the control dock.</div>
+          <div><kbd>U</kbd></div><div>Master hide all on-screen controls. Click the gray dot to bring them back.</div>
+        </div>
+      </div>
+
+      <div class="cheatGroup">
+        <h4>Effects panel</h4>
+        <div class="keyGrid">
+          <div><kbd>1</kbd>–<kbd>0</kbd></div><div>Change the primary effect bank.</div>
+          <div><kbd>Shift</kbd> + <kbd>1</kbd>–<kbd>0</kbd></div><div>Change the secondary effect bank.</div>
+          <div><kbd>[</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Hold [ and use arrows for Primary mix.</div>
+          <div><kbd>]</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Hold ] and use arrows for Secondary mix.</div>
+          <div><kbd>I</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Hold I for Intensity.</div>
+          <div><kbd>M</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Hold M for Mic sensitivity, from 0% to 500%.</div>
+        </div>
+      </div>
+
+      <div class="cheatGroup">
+        <h4>Visual panel</h4>
+        <div class="keyGrid">
+          <div><kbd>G</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Glow.</div>
+          <div><kbd>T</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Texture.</div>
+          <div><kbd>Q</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Visual bitrate / pixel depth.</div>
+          <div><kbd>A</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Trail.</div>
+          <div><kbd>D</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Edge boost.</div>
+          <div><kbd>H</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Color drift.</div>
+          <div><kbd>F</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Feedback.</div>
+        </div>
+      </div>
+
+      <div class="cheatGroup">
+        <h4>Camera frame</h4>
+        <div class="keyGrid">
+          <div><kbd>Z</kbd> + <kbd>+</kbd>/<kbd>-</kbd></div><div>Zoom camera source in or out.</div>
+          <div><kbd>Z</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Hold Z and use left/right for camera zoom.</div>
+          <div><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd></div><div>Pan the zoomed camera view when no slider hotkey is held.</div>
+          <div><kbd>J</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Camera ghost opacity.</div>
+        </div>
+      </div>
+
+      <div class="cheatGroup">
+        <h4>Export + app actions</h4>
+        <div class="keyGrid">
+          <div><kbd>R</kbd></div><div>Start / stop recording.</div>
+          <div><kbd>S</kbd></div><div>Save a PNG snapshot.</div>
+          <div><kbd>B</kbd></div><div>Randomize visual stack.</div>
+          <div><kbd>Space</kbd></div><div>Pause / resume visual engine.</div>
+          <div><kbd>N</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>Export bitrate.</div>
+          <div><kbd>L</kbd> + <kbd>←</kbd>/<kbd>→</kbd></div><div>FPS.</div>
+          <div><kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>C</kbd></div><div>Copy current preset JSON.</div>
+          <div><kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>V</kbd></div><div>Paste preset JSON from clipboard.</div>
+          <div><kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Z</kbd></div><div>Undo. Use Shift+⌘/Ctrl+Z or Ctrl+Y to redo.</div>
+        </div>
       </div>
     </aside>
 
@@ -896,6 +1037,9 @@
         feedback: 0.24,
         zoom: 0.2,
         cameraAlpha: 0.06,
+        cameraZoom: 1,
+        panX: 0,
+        panY: 0,
         exportBitrate: 8,
         fps: 30
       });
@@ -921,6 +1065,48 @@
       let mediaRecorder = null;
       let recordedChunks = [];
       let recorderMime = "";
+      let uiHidden = false;
+      let activeShortcutSetting = null;
+      let activeShortcutKey = null;
+
+      const sliderShortcuts = {
+        "[": "primaryMix",
+        "]": "secondaryMix",
+        i: "intensity",
+        m: "audioSensitivity",
+        g: "glow",
+        t: "texture",
+        q: "bitrate",
+        a: "trail",
+        d: "edgeBoost",
+        h: "colorDrift",
+        f: "feedback",
+        z: "cameraZoom",
+        j: "cameraAlpha",
+        n: "exportBitrate",
+        l: "fps"
+      };
+
+      const settingLabels = {
+        primaryMix: "Primary mix",
+        secondaryMix: "Secondary mix",
+        intensity: "Intensity",
+        audioSensitivity: "Mic sensitivity",
+        glow: "Glow",
+        texture: "Texture",
+        bitrate: "Visual bitrate",
+        trail: "Trail",
+        edgeBoost: "Edge boost",
+        colorDrift: "Color drift",
+        feedback: "Feedback",
+        zoom: "Zoom warp",
+        cameraAlpha: "Camera ghost",
+        cameraZoom: "Camera zoom",
+        panX: "Pan left/right",
+        panY: "Pan up/down",
+        exportBitrate: "Export bitrate",
+        fps: "FPS"
+      };
 
       const canvas = document.getElementById("visualCanvas");
       const ctx = canvas.getContext("2d", { alpha: false });
@@ -939,6 +1125,7 @@
       const statusPill = document.getElementById("statusPill");
       const topBar = document.getElementById("topBar");
       const cornerHint = document.getElementById("cornerHint");
+      const masterHideButton = document.getElementById("masterHideButton");
       const volumeMeter = document.getElementById("volumeMeter");
       const bassMeter = document.getElementById("bassMeter");
       const motionMeter = document.getElementById("motionMeter");
@@ -979,12 +1166,18 @@
       function populateEffects() {
         const primary = document.getElementById("primarySelect");
         const secondary = document.getElementById("secondarySelect");
+        primary.add(new Option("None", "none"));
+        secondary.add(new Option("None", "none"));
         EFFECTS.forEach(effect => {
           const opt1 = new Option(effect.name, effect.id);
           const opt2 = new Option(effect.name, effect.id);
           primary.add(opt1);
           secondary.add(opt2);
         });
+      }
+
+      function isEffectId(id) {
+        return id === "none" || EFFECTS.some(effect => effect.id === id);
       }
 
       function showToast(message) {
@@ -1033,6 +1226,9 @@
       function formatValue(key, value) {
         if (key === "fps") return `${Math.round(value)}`;
         if (key === "exportBitrate") return `${value.toFixed(1)}M`;
+        if (key === "cameraZoom") return `${value.toFixed(2)}x`;
+        if (key === "panX" || key === "panY") return `${Math.round(value * 100)}`;
+        if (key === "audioSensitivity") return `${Math.round(value * 100)}%`;
         return `${Math.round(value * 100)}%`;
       }
 
@@ -1056,8 +1252,12 @@
             cleaned[key] = numeric ? Number(next[key]) : next[key];
           }
         });
-        if (!EFFECTS.some(e => e.id === cleaned.primaryEffect)) cleaned.primaryEffect = defaultSettings.primaryEffect;
-        if (!EFFECTS.some(e => e.id === cleaned.secondaryEffect)) cleaned.secondaryEffect = defaultSettings.secondaryEffect;
+        if (!isEffectId(cleaned.primaryEffect)) cleaned.primaryEffect = defaultSettings.primaryEffect;
+        if (!isEffectId(cleaned.secondaryEffect)) cleaned.secondaryEffect = defaultSettings.secondaryEffect;
+        cleaned.cameraZoom = clamp(Number(cleaned.cameraZoom || 1), 1, 4);
+        cleaned.panX = clamp(Number(cleaned.panX || 0), -1, 1);
+        cleaned.panY = clamp(Number(cleaned.panY || 0), -1, 1);
+        cleaned.audioSensitivity = clamp(Number(cleaned.audioSensitivity || 0), 0, 5);
         if (pushHistory && !isApplyingHistory) undoStack.push({ ...settings });
         settings = cleaned;
         updateControlsFromSettings();
@@ -1095,7 +1295,7 @@
           primaryMix: rand(0.72, 1),
           secondaryMix: rand(0.28, 0.86),
           intensity: rand(0.48, 1),
-          audioSensitivity: rand(0.55, 1.45),
+          audioSensitivity: rand(0.35, 3.2),
           glow: rand(0.42, 1),
           texture: rand(0.22, 1),
           bitrate: rand(0.20, 0.94),
@@ -1104,7 +1304,10 @@
           colorDrift: rand(0.12, 0.88),
           feedback: rand(0.05, 0.65),
           zoom: rand(0, 0.58),
-          cameraAlpha: rand(0, 0.18)
+          cameraAlpha: rand(0, 0.18),
+          cameraZoom: rand(1, 1.75),
+          panX: rand(-0.16, 0.16),
+          panY: rand(-0.16, 0.16)
         };
         updateControlsFromSettings();
         showToast("New visual stack generated.");
@@ -1158,7 +1361,15 @@
         });
 
         document.getElementById("collapseButton").addEventListener("click", toggleControls);
+        document.getElementById("keyboardButton").addEventListener("click", toggleCheatSheet);
         document.getElementById("randomizeButton").addEventListener("click", randomizeSettings);
+        masterHideButton.addEventListener("click", toggleMasterUI);
+        document.querySelectorAll("[data-pan]").forEach(button => {
+          button.addEventListener("click", () => panByDirection(button.dataset.pan, 1));
+        });
+        document.querySelectorAll("[data-zoom]").forEach(button => {
+          button.addEventListener("click", () => nudgeZoom(button.dataset.zoom === "in" ? 1 : -1, 1));
+        });
         document.getElementById("recordButton").addEventListener("click", toggleRecording);
         document.getElementById("snapshotButton").addEventListener("click", saveSnapshot);
         document.getElementById("copyPresetButton").addEventListener("click", copyPreset);
@@ -1169,8 +1380,9 @@
         document.getElementById("restartMediaButton").addEventListener("click", () => startRealMedia(true));
         document.getElementById("pauseButton").addEventListener("click", togglePause);
         document.getElementById("homeButton").addEventListener("click", showHome);
-        document.getElementById("enterButton").addEventListener("click", launchLive);
-        document.getElementById("demoButton").addEventListener("click", launchDemo);
+        document.getElementById("startButton").addEventListener("click", () => startRealMedia(false));
+        document.getElementById("demoButton").addEventListener("click", startDemo);
+        document.getElementById("loaderPreviewButton").addEventListener("click", () => playLoader(() => {}));
       }
 
       function showPanel(panelId) {
@@ -1190,12 +1402,29 @@
         showToast(isPaused ? "Visual engine paused." : "Visual engine running.");
       }
 
+      function toggleCheatSheet(force) {
+        const shouldShow = typeof force === "boolean" ? force : cheatSheet.classList.contains("hidden");
+        cheatSheet.classList.toggle("hidden", !shouldShow);
+      }
+
+      function toggleMasterUI() {
+        uiHidden = !uiHidden;
+        document.getElementById("appShell").classList.toggle("uiHidden", uiHidden);
+        masterHideButton.textContent = uiHidden ? "" : "Hide UI";
+        masterHideButton.classList.remove("hidden");
+        masterHideButton.setAttribute("aria-pressed", String(uiHidden));
+        masterHideButton.title = uiHidden ? "Show on-screen controls" : "Hide all on-screen controls";
+      }
+
       function showHome() {
         homeScreen.classList.remove("hidden");
         controlDock.classList.add("hidden");
         topBar.classList.add("hidden");
         cornerHint.classList.add("hidden");
         cheatSheet.classList.add("hidden");
+        masterHideButton.classList.add("hidden");
+        uiHidden = false;
+        document.getElementById("appShell").classList.remove("uiHidden");
       }
 
       function showVisualizer() {
@@ -1204,14 +1433,7 @@
         controlDock.classList.remove("collapsed");
         topBar.classList.remove("hidden");
         cornerHint.classList.remove("hidden");
-      }
-
-      function launchLive() {
-        playLoader(() => startRealMedia(false));
-      }
-
-      function launchDemo() {
-        playLoader(() => startDemo());
+        masterHideButton.classList.remove("hidden");
       }
 
       async function startRealMedia(restart = false) {
@@ -1354,6 +1576,19 @@
             sHeight = vw / canvasRatio;
             sy = (vh - sHeight) / 2;
           }
+
+          const baseSX = sx;
+          const baseSY = sy;
+          const baseW = sWidth;
+          const baseH = sHeight;
+          const cameraZoom = clamp(Number(settings.cameraZoom || 1), 1, 4);
+          sWidth = baseW / cameraZoom;
+          sHeight = baseH / cameraZoom;
+          sx = baseSX + (baseW - sWidth) * ((clamp(Number(settings.panX || 0), -1, 1) + 1) / 2);
+          sy = baseSY + (baseH - sHeight) * ((clamp(Number(settings.panY || 0), -1, 1) + 1) / 2);
+          sx = clamp(sx, 0, vw - sWidth);
+          sy = clamp(sy, 0, vh - sHeight);
+
           sourceCtx.translate(sw, 0);
           sourceCtx.scale(-1, 1);
           sourceCtx.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, sw, sh);
@@ -1453,7 +1688,7 @@
       }
 
       function drawEffect(id, frame, mix) {
-        if (mix <= 0.01) return;
+        if (id === "none" || mix <= 0.01) return;
         const fn = effectFunctions[id] || effectFunctions.tealBits;
         ctx.save();
         fn(frame, clamp(mix));
@@ -1879,8 +2114,16 @@
         showToast(`${secondary ? "Secondary" : "Primary"}: ${effect.name}`);
       }
 
-      function adjustLastRange(delta) {
-        const range = lastRange || document.querySelector(".panelPage.active input[type='range']");
+      function focusSetting(setting, announce = false) {
+        const range = document.querySelector(`input[type="range"][data-setting="${setting}"]`);
+        if (!range) return null;
+        lastRange = range;
+        range.focus({ preventScroll: true });
+        if (announce) showToast(`${settingLabels[setting] || setting}: use ← / → to adjust.`);
+        return range;
+      }
+
+      function adjustRange(range, delta) {
         if (!range) return;
         const step = Number(range.step || 0.01);
         const min = Number(range.min || 0);
@@ -1891,50 +2134,113 @@
         applySetting(range.dataset.setting, next);
       }
 
+      function adjustSetting(setting, delta) {
+        const range = focusSetting(setting, false);
+        adjustRange(range, delta);
+      }
+
+      function adjustLastRange(delta) {
+        const range = lastRange || document.querySelector(".panelPage.active input[type='range']");
+        adjustRange(range, delta);
+      }
+
+      function nudgeZoom(direction, multiplier = 1) {
+        const range = focusSetting("cameraZoom", false);
+        if (!range) return;
+        const next = clamp(Number(settings.cameraZoom || 1) + direction * 0.08 * multiplier, 1, 4);
+        range.value = String(next);
+        applySetting("cameraZoom", next);
+      }
+
+      function panByDirection(direction, multiplier = 1) {
+        const step = 0.055 * multiplier;
+        if (direction === "left") applySetting("panX", clamp(Number(settings.panX || 0) - step, -1, 1));
+        if (direction === "right") applySetting("panX", clamp(Number(settings.panX || 0) + step, -1, 1));
+        if (direction === "up") applySetting("panY", clamp(Number(settings.panY || 0) - step, -1, 1));
+        if (direction === "down") applySetting("panY", clamp(Number(settings.panY || 0) + step, -1, 1));
+        focusSetting(direction === "left" || direction === "right" ? "panX" : "panY", false);
+      }
+
       function setupKeyboard() {
         document.addEventListener("keydown", event => {
           const tag = (event.target && event.target.tagName || "").toLowerCase();
           const isTyping = ["input", "textarea", "select"].includes(tag) && event.target.type !== "range";
           if (isTyping && !event.ctrlKey && !event.metaKey) return;
 
-          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "c") {
+          const rawKey = event.key;
+          const key = rawKey.toLowerCase();
+
+          if ((event.ctrlKey || event.metaKey) && key === "c") {
             event.preventDefault();
             copyPreset();
             return;
           }
-          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "v") {
+          if ((event.ctrlKey || event.metaKey) && key === "v") {
             event.preventDefault();
             pastePreset();
             return;
           }
-          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
+          if ((event.ctrlKey || event.metaKey) && key === "z") {
             event.preventDefault();
             if (event.shiftKey) redo(); else undo();
             return;
           }
-          if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "y") {
+          if ((event.ctrlKey || event.metaKey) && key === "y") {
             event.preventDefault();
             redo();
             return;
           }
 
-          const key = event.key.toLowerCase();
-          const number = /^\d$/.test(event.key) ? Number(event.key) : null;
+          const number = /^\d$/.test(rawKey) ? Number(rawKey) : null;
           if (number !== null) {
             event.preventDefault();
             selectEffectByNumber(number, event.shiftKey);
             return;
           }
+
+          if (sliderShortcuts[key] && !event.metaKey && !event.ctrlKey) {
+            if (activeShortcutKey !== key) {
+              activeShortcutKey = key;
+              activeShortcutSetting = sliderShortcuts[key];
+              focusSetting(activeShortcutSetting, true);
+            }
+            event.preventDefault();
+            return;
+          }
+
+          if ((rawKey === "+" || rawKey === "=") && activeShortcutSetting === "cameraZoom") {
+            event.preventDefault();
+            nudgeZoom(1, event.shiftKey ? 2 : 1);
+            return;
+          }
+          if ((rawKey === "-" || rawKey === "_") && activeShortcutSetting === "cameraZoom") {
+            event.preventDefault();
+            nudgeZoom(-1, event.shiftKey ? 2 : 1);
+            return;
+          }
+
           if (["arrowup", "arrowright", "arrowdown", "arrowleft"].includes(key)) {
             event.preventDefault();
-            const positive = key === "arrowup" || key === "arrowright";
-            adjustLastRange((positive ? 1 : -1) * (event.shiftKey ? 10 : 1));
+            const big = event.shiftKey ? 5 : 1;
+            if (activeShortcutSetting) {
+              if (key === "arrowright" || key === "arrowup") adjustSetting(activeShortcutSetting, big);
+              else adjustSetting(activeShortcutSetting, -big);
+            } else {
+              if (key === "arrowleft") panByDirection("left", big);
+              if (key === "arrowright") panByDirection("right", big);
+              if (key === "arrowup") panByDirection("up", big);
+              if (key === "arrowdown") panByDirection("down", big);
+            }
             return;
           }
 
           switch (key) {
             case "k":
-              cheatSheet.classList.toggle("hidden");
+              toggleCheatSheet();
+              event.preventDefault();
+              break;
+            case "u":
+              toggleMasterUI();
               event.preventDefault();
               break;
             case "e": showPanel("effectsPanel"); event.preventDefault(); break;
@@ -1947,6 +2253,14 @@
             case "p": toggleControls(); event.preventDefault(); break;
             case " ": togglePause(); event.preventDefault(); break;
             case "escape": cheatSheet.classList.add("hidden"); event.preventDefault(); break;
+          }
+        });
+
+        document.addEventListener("keyup", event => {
+          const key = event.key.toLowerCase();
+          if (key === activeShortcutKey) {
+            activeShortcutKey = null;
+            activeShortcutSetting = null;
           }
         });
       }
@@ -2053,11 +2367,12 @@
         resizeLoader();
         setupControls();
         setupKeyboard();
-        homeScreen.classList.remove("hidden");
-        loaderScreen.classList.add("hidden");
         window.addEventListener("resize", () => {
           resizeCanvas();
           resizeLoader();
+        });
+        playLoader(() => {
+          homeScreen.classList.remove("hidden");
         });
       }
 
